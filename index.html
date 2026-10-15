@@ -718,6 +718,18 @@ renderCalendar();
 renderDashboard();
 setTimeout(scrollToNow,100);
 updateClock();
+
+window.addEventListener("error", function (event) {
+  document.body.insertAdjacentHTML(
+    "afterbegin",
+    '<div style="background:#6b1725;color:white;padding:16px;' +
+    'font:14px Arial;position:relative;z-index:99999">' +
+    '<b>Sayfa hatası:</b> ' +
+    String(event.message).replace(/</g, "&lt;") +
+    "</div>"
+  );
+});
+  
 </script>
 </body>
 </html>
