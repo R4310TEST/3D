@@ -4600,5 +4600,240 @@ setInterval(
 
 </script>
 
+<!-- Supabase giriş ve kayıt ekranı -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+  #printer-auth-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(10, 15, 28, 0.94);
+    color: #fff;
+    font-family: Arial, sans-serif;
+  }
+  #printer-auth-card {
+    width: 100%;
+    max-width: 390px;
+    box-sizing: border-box;
+    padding: 28px;
+    border: 1px solid #35415a;
+    border-radius: 18px;
+    background: #172033;
+    box-shadow: 0 20px 60px #0006;
+  }
+  #printer-auth-card h2 { margin-top: 0; }
+  #printer-auth-card input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 10px 0;
+    padding: 13px;
+    border: 1px solid #526079;
+    border-radius: 8px;
+    background: #0e1525;
+    color: white;
+    font-size: 15px;
+  }
+  #printer-auth-card button {
+    width: 100%;
+    margin-top: 10px;
+    padding: 13px;
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  #printer-auth-login { background: #68a5ff; color: #101828; }
+  #printer-auth-signup { background: #293852; color: white; }
+  #printer-auth-message { font-size: 14px; line-height: 1.5; }
+  #printer-auth-userbar {
+    position: fixed;
+    z-index: 999998;
+    top: 10px;
+    right: 10px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #172033;
+    color: white;
+    font: 13px Arial, sans-serif;
+  }
+  #printer-auth-userbar button {
+    padding: 7px 10px;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+</style>
+
+<div id="printer-auth-overlay">
+  <div id="printer-auth-card">
+    <h2>Üretim Takip Sistemi</h2>
+    <p>Kullanıcı adınla giriş yap veya yeni hesap oluştur.</p>
+
+    <form id="printer-auth-form">
+      <input
+        id="printer-auth-username"
+        type="text"
+        placeholder="Kullanıcı adı"
+        minlength="3"
+        maxlength="24"
+        pattern="[a-zA-Z0-9_]+"
+        autocomplete="username"
+        required
+      />
+      <input
+        id="printer-auth-password"
+        type="password"
+        placeholder="Şifre (en az 8 karakter)"
+        minlength="8"
+        autocomplete="current-password"
+        required
+      />
+      <button id="printer-auth-login" type="submit">Giriş Yap</button>
+      <button id="printer-auth-signup" type="button">Yeni Hesap Oluştur</button>
+    </form>
+
+    <p id="printer-auth-message" aria-live="polite"></p>
+  </div>
+</div>
+
+<div id="printer-auth-userbar">
+  <span id="printer-auth-userinfo"></span>
+  <button id="printer-auth-logout" type="button">Çıkış</button>
+</div>
+
+<script>
+(() => {
+  const SUPABASE_URL = "https://hvmsqouqnqqmxjrqmyka.supabase.co/rest/v1/";
+  const SUPABASE_KEY = "sb_publishable_H6r3_4gGs8Y_lTKUhzfwmQ_eK3kaBOq";
+
+  const message = document.getElementById("printer-auth-message");
+  const overlay = document.getElementById("printer-auth-overlay");
+  const userbar = document.getElementById("printer-auth-userbar");
+  const usernameInput = document.getElementById("printer-auth-username");
+  const passwordInput = document.getElementById("printer-auth-password");
+
+  if (
+    SUPABASE_URL === "SUPABASE_URL_BURAYA" ||
+    SUPABASE_KEY === "PUBLISHABLE_KEY_BURAYA"
+  ) {
+    message.textContent = "Önce Supabase URL ve Publishable Key bilgilerini koda ekle.";
+    return;
+  }
+
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const syntheticEmail = username =>
+    username.toLowerCase() + "@users.example.com";
+
+  async function showUser(user) {
+    if (!user) {
+      overlay.style.display = "flex";
+      userbar.style.display = "none";
+      return;
+    }
+
+    const { data: profile, error } = await db
+      .from("profiles")
+      .select("username, role")
+      .eq("id", user.id)
+      .single();
+
+    if (error || !profile) {
+      message.textContent =
+        "Profil bilgisi alınamadı. Supabase tablo ve politikalarını kontrol et.";
+      return;
+    }
+
+    document.getElementById("printer-auth-userinfo").textContent =
+      profile.username + " · " + profile.role;
+
+    overlay.style.display = "none";
+    userbar.style.display = "flex";
+    window.printerAppUser = profile;
+  }
+
+  async function signInOrSignUp(isSignup) {
+    const username = usernameInput.value.trim().toLowerCase();
+    const password = passwordInput.value;
+
+    if (!/^[a-z0-9_]{3,24}$/.test(username)) {
+      message.textContent =
+        "Kullanıcı adı 3–24 karakter olmalı; yalnızca harf, rakam ve _ kullan.";
+      return;
+    }
+
+    if (password.length < 8) {
+      message.textContent = "Şifre en az 8 karakter olmalı.";
+      return;
+    }
+
+    message.textContent = "İşlem yapılıyor...";
+
+    const result = isSignup
+      ? await db.auth.signUp({
+          email: syntheticEmail(username),
+          password,
+          options: { data: { username } }
+        })
+      : await db.auth.signInWithPassword({
+          email: syntheticEmail(username),
+          password
+        });
+
+    if (result.error) {
+      message.textContent = isSignup
+        ? "Kayıt başarısız: " + result.error.message
+        : "Giriş başarısız. Kullanıcı adı ve şifreni kontrol et.";
+      return;
+    }
+
+    if (result.data.session) {
+      message.textContent = "Giriş başarılı.";
+      await showUser(result.data.user);
+    } else {
+      message.textContent =
+        "Oturum açılmadı. Supabase e-posta doğrulama ayarını kontrol et.";
+    }
+  }
+
+  document.getElementById("printer-auth-form").addEventListener(
+    "submit",
+    event => {
+      event.preventDefault();
+      signInOrSignUp(false);
+    }
+  );
+
+  document.getElementById("printer-auth-signup").addEventListener(
+    "click",
+    () => signInOrSignUp(true)
+  );
+
+  document.getElementById("printer-auth-logout").addEventListener(
+    "click",
+    async () => {
+      const { error } = await db.auth.signOut();
+      if (error) {
+        message.textContent = "Çıkış yapılamadı: " + error.message;
+        return;
+      }
+      window.printerAppUser = null;
+      await showUser(null);
+    }
+  );
+
+  db.auth.onAuthStateChange((_event, session) => {
+    showUser(session?.user ?? null);
+  });
+})();
+</script>
 </body>
 </html>
