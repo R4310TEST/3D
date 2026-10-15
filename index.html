@@ -1,4 +1,3 @@
-html
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -308,7 +307,7 @@ windowStart.setDate(windowStart.getDate()-3);
 let dayCount = 14;
 let editingId = null;
 let renamingId = null;
-let renderTimer = null;
+let Timer = null;
 
 function makeCell(className,text) {
   const el = document.createElement("div");
@@ -317,7 +316,7 @@ function makeCell(className,text) {
   return el;
 }
 
-function renderCalendar() {
+function Calendar() {
   timeline.replaceChildren();
 
   const header = makeCell("headrow");
