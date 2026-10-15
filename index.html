@@ -1,978 +1,4604 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>R4310 - PRINTFLOW 3D</title>
+
 <style>
-:root {
-  --bg: #0b1118;
-  --panel: #121b25;
-  --panel2: #172330;
-  --border: #293847;
-  --text: #e7eef5;
-  --muted: #91a1b2;
-  --green: #35d07f;
-  --green-dark: #153d2d;
-  --red: #ff7474;
-  --orange: #ffb45e;
-  --name-width: 95px;
-  --hour-width: 52px;
+:root{
+  --bg:#11151b;
+  --panel:#1b222c;
+  --border:#35404d;
+  --text:#e9eef5;
+  --muted:#a3afbd;
+  --green:#39d98a;
+
+  /* Yazıcı sütunu yarıya indirildi */
+  --name-width:95px;
+
+  --cell-width:46px;
+  --row-height:76px;
 }
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 13px;
+
+*{
+  box-sizing:border-box;
 }
-button, input, select, textarea { font: inherit; }
-button { cursor: pointer; }
-.app { min-height: 100vh; }
-.topbar {
-  height: 66px;
-  padding: 0 22px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  background: #101923;
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 20;
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
 }
-.brand { display:flex; align-items:center; gap:12px; min-width:0; }
-.logo {
-  width: 36px; height:36px; border-radius:10px;
-  display:grid; place-items:center; color:#06150d;
-  background:var(--green); font-weight:900; font-size:14px;
+
+button,input,select,textarea{
+  font:inherit;
 }
-.brand-title { font-weight:800; letter-spacing:1.2px; font-size:14px; }
-.brand-sub { color:var(--muted); font-size:10px; margin-top:3px; letter-spacing:1px; }
-.top-right { display:flex; align-items:center; gap:18px; }
-.live { display:flex; align-items:center; gap:7px; color:var(--green); font-size:11px; }
-.live-dot { width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px #35d07f88; }
-.clock { text-align:right; font-variant-numeric:tabular-nums; }
-.clock-time { font-size:17px;font-weight:750; }
-.clock-date { color:var(--muted);font-size:10px;margin-top:2px; }
-.nav {
-  display:flex; gap:6px; padding:12px 22px;
-  background:#0e161f; border-bottom:1px solid var(--border);
+
+button{
+  cursor:pointer;
+  border:1px solid var(--border);
+  color:var(--text);
+  background:#27313e;
+  padding:9px 13px;
+  border-radius:7px;
 }
-.nav button,.btn {
-  border:1px solid var(--border); background:#172330; color:var(--text);
-  border-radius:8px; padding:9px 13px; font-weight:650;
+
+button:hover{
+  background:#354252;
 }
-.nav button.active { color:var(--green); border-color:#287d52; background:#142b22; }
-.btn:hover,.nav button:hover { border-color:#4d687e; }
-.btn.primary { color:#07150d; background:var(--green); border-color:var(--green); }
-.btn.danger { color:#ffd4d4; border-color:#743d43; background:#3a2026; }
-.btn.small { padding:6px 9px; font-size:11px; }
-.main { padding:18px 22px 30px; max-width:1900px; margin:auto; }
-.page-head { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
-h1 { margin:0; font-size:19px; letter-spacing:.2px; }
-.subtitle { color:var(--muted); margin-top:5px; font-size:11px; }
-.actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-.panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-.panel-head { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:13px 15px; border-bottom:1px solid var(--border); }
-.panel-title { font-size:12px; font-weight:800; letter-spacing:.4px; }
-.muted { color:var(--muted); }
-.stats { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin-bottom:16px; }
-.stat { background:var(--panel); border:1px solid var(--border); border-radius:11px; padding:15px; min-width:0; }
-.stat-label { color:var(--muted); font-size:11px; }
-.stat-value { font-size:25px; font-weight:800; margin-top:8px; font-variant-numeric:tabular-nums; }
-.stat-note { color:var(--muted); font-size:10px; margin-top:4px; }
-.stat-value.green { color:var(--green); }
-.stat-value.orange { color:var(--orange); }
-.stat-value.red { color:var(--red); }
-.dashboard-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:16px; }
-.printer-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; padding:12px; }
-.printer-card { border:1px solid var(--border); background:#141f2a; border-radius:9px; padding:12px; min-width:0; }
-.printer-card-top { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
-.printer-name { font-weight:800; overflow-wrap:anywhere; }
-.pill { display:inline-flex; align-items:center; border-radius:20px; padding:4px 7px; font-size:10px; white-space:nowrap; font-weight:750; }
-.pill.running { color:#8af0b8; background:#173c2b; }
-.pill.idle { color:#bdc9d5; background:#263544; }
-.pill.maintenance { color:#ffd08a; background:#44321d; }
-.pill.fault { color:#ffaaaa; background:#48262c; }
-.progress { height:5px; background:#293847; border-radius:10px; overflow:hidden; margin-top:12px; }
-.progress-fill { height:100%; background:var(--green); border-radius:10px; transition:width .5s; }
-.printer-meta { display:flex; justify-content:space-between; gap:8px; color:var(--muted); font-size:10px; margin-top:7px; }
-.list-wrap { padding:0 12px 12px; }
-.job-list { display:flex; flex-direction:column; gap:7px; }
-.job-row {
-  display:flex; align-items:center; gap:12px; min-width:0;
-  border:1px solid var(--border); background:#141f2a; border-radius:8px;
-  padding:9px 11px;
+
+button.primary{
+  background:#286d50;
+  border-color:#398e69;
 }
-.job-color { width:4px; align-self:stretch; flex-shrink:0; border-radius:4px; background:var(--green); }
-.job-row-main { min-width:0; flex:1; }
-.job-row-title { font-weight:750; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.job-row-sub { display:flex; align-items:center; flex-wrap:wrap; gap:5px 14px; color:var(--muted); font-size:10px; margin-top:5px; }
-.job-row-side { display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; }
-.meta-chip { white-space:nowrap; color:#c5d1dc; font-size:10px; }
-.empty { color:var(--muted); padding:18px 10px; text-align:center; }
-.calendar-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
-.zoom-label { color:var(--muted); font-size:10px; }
-.calendar-outer { position:relative; overflow:hidden; }
-.calendar-scroll { overflow:auto; max-height:calc(100vh - 250px); min-height:400px; position:relative; scrollbar-color:#415363 #111923; }
-.calendar { position:relative; width:max-content; min-width:100%; }
-.calendar-header,.calendar-row { display:flex; position:relative; }
-.calendar-header {
-  height:48px; background:#14202b; border-bottom:1px solid var(--border);
-  position:sticky; top:0; z-index:8;
+
+button.danger{
+  background:#692f36;
 }
-.printer-head,.printer-cell {
-  width:var(--name-width); min-width:var(--name-width); max-width:var(--name-width);
-  position:sticky; left:0; z-index:6;
-  background:#17232f; border-right:1px solid #3a4a59;
-  display:flex; align-items:center; justify-content:center;
-  padding:5px; text-align:center; overflow:hidden;
+
+button.small{
+  padding:5px 9px;
+  font-size:12px;
 }
-.printer-head { z-index:10; color:#b8c7d5; font-size:10px; font-weight:800; }
-.printer-cell { height:76px; border-bottom:1px solid var(--border); flex-direction:column; gap:4px; }
-.printer-cell-name { font-size:10px; font-weight:800; overflow-wrap:anywhere; line-height:1.2; }
-.printer-cell .pill { font-size:9px; padding:2px 5px; }
-.hours { display:flex; height:100%; }
-.day-group { flex:none; }
-.day-label {
-  height:23px; display:flex; align-items:center; justify-content:center;
-  font-size:10px; font-weight:800; color:#c9d5df;
-  border-left:1px solid #40505e;
+
+/* HEADER */
+
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  padding:20px 24px 12px;
+  border-bottom:1px solid var(--border);
 }
-.hour-labels { display:flex; height:25px; }
-.hour-label {
-  flex:none; display:flex; align-items:center; justify-content:center;
-  font-size:9px; color:#a8b7c5; border-left:1px solid #293846;
-  font-variant-numeric:tabular-nums;
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
 }
-.calendar-row { height:76px; border-bottom:1px solid var(--border); }
-.row-hours { display:flex; position:relative; height:76px; }
-.hour-cell {
-  flex:none; height:76px; border-left:1px solid #253442;
-  background:#111a23; position:relative;
+
+.brand-mark{
+  width:42px;
+  height:42px;
+  border:2px solid var(--green);
+  border-radius:10px;
+  display:grid;
+  place-items:center;
+  color:var(--green);
+  font-weight:800;
 }
-.hour-cell.work { background:#e7f4e9; }
-.hour-cell.weekend { background:#f9e9e9; }
-.hour-cell.work.weekend { background:#f9e9e9; }
-.day-boundary { border-left:1px solid #687988 !important; }
-.status-band {
-  position:absolute; top:0; height:100%; z-index:2;
-  opacity:.92; pointer-events:none;
+
+.brand h1{
+  margin:0;
+  font-size:21px;
 }
-.status-band.maintenance { background:rgba(235,158,63,.28); border-top:1px solid #b67d3d; border-bottom:1px solid #b67d3d; }
-.status-band.fault { background:rgba(245,83,94,.25); border-top:1px solid #bd4d58; border-bottom:1px solid #bd4d58; }
-.job-block {
-  position:absolute; top:7px; height:62px; z-index:5;
-  border-radius:6px; padding:5px 7px; overflow:hidden; cursor:pointer;
-  color:#f5fff9; border:1px solid rgba(255,255,255,.22);
-  box-shadow:0 2px 5px #0002; min-width:4px;
+
+.brand p{
+  margin:5px 0 0;
+  color:var(--muted);
+  font-size:12px;
+  letter-spacing:1.5px;
 }
-.job-block:hover { filter:brightness(1.12); z-index:7; }
-.job-block.pending { background:#3d82b8; }
-.job-block.running { background:#188953; }
-.job-block.completed { background:#566c7b; }
-.job-block-title { font-size:10px; font-weight:800; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
-.job-block-detail { font-size:9px; opacity:.95; margin-top:4px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
-.job-block-progress { height:3px; background:#ffffff44; margin-top:5px; border-radius:3px; overflow:hidden; }
-.job-block-progress > span { display:block; height:100%; background:#d9ffe7; }
-.now-line {
-  position:absolute; top:48px; width:2px; background:#20d879; z-index:7;
-  pointer-events:none; box-shadow:0 0 5px #20d87955;
+
+.clock{
+  text-align:right;
+  line-height:1.6;
+  color:var(--muted);
+  font-size:13px;
 }
-.now-label {
-  position:absolute; top:0; left:5px; transform:translateY(-1px);
-  background:#20d879; color:#062312; border-radius:4px;
-  font-size:9px; font-weight:900; padding:3px 5px; white-space:nowrap;
+
+.clock strong{
+  display:block;
+  color:var(--text);
+  font-size:18px;
+  font-weight:600;
 }
-.legend { display:flex; gap:13px; flex-wrap:wrap; padding:11px 14px; border-top:1px solid var(--border); }
-.legend-item { display:flex; align-items:center; gap:6px; color:var(--muted); font-size:10px; }
-.legend-dot { width:9px;height:9px;border-radius:3px; }
-.legend-swatch { width:14px;height:10px;border-radius:2px; }
-.modal-backdrop {
-  display:none; position:fixed; inset:0; z-index:50; background:#050a10bb;
-  align-items:center; justify-content:center; padding:16px;
+
+main{
+  padding:16px 20px 30px;
 }
-.modal-backdrop.open { display:flex; }
-.modal {
-  width:min(540px,100%); max-height:90vh; overflow:auto;
-  background:#121c27; border:1px solid #354757; border-radius:13px;
-  box-shadow:0 25px 80px #0009;
+
+.topbar,
+.toolbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
 }
-.modal-head { display:flex; justify-content:space-between; align-items:center; padding:16px 18px; border-bottom:1px solid var(--border); }
-.modal-head h2 { margin:0; font-size:15px; }
-.close-btn { background:transparent; color:var(--muted); border:0; font-size:22px; }
-.modal-body { padding:17px 18px; }
-.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:13px; }
-.field { display:flex; flex-direction:column; gap:6px; min-width:0; }
-.field.full { grid-column:1/-1; }
-.field label { color:#bdc9d4; font-size:11px; font-weight:700; }
-.field input,.field select,.field textarea {
-  width:100%; min-width:0; border:1px solid #354757; border-radius:7px;
-  padding:10px; color:var(--text); background:#0d151e; outline:none;
+
+.topbar{
+  margin-bottom:16px;
 }
-.field input:focus,.field select:focus,.field textarea:focus { border-color:var(--green); }
-.field textarea { resize:vertical; min-height:65px; }
-.modal-foot { display:flex; justify-content:space-between; gap:8px; padding:13px 18px; border-top:1px solid var(--border); }
-.modal-foot-right { display:flex; gap:8px; }
-.toast {
-  position:fixed; right:20px; bottom:20px; z-index:100; max-width:min(400px,calc(100vw - 40px));
-  background:#1c2c38; color:var(--text); border:1px solid #415668; border-radius:9px;
-  padding:12px 15px; box-shadow:0 10px 30px #0006; display:none;
+
+.toolbar{
+  margin-bottom:12px;
 }
-.toast.show { display:block; }
-@media(max-width:950px) {
-  .stats { grid-template-columns:repeat(3,minmax(0,1fr)); }
-  .printer-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+
+.tabs,
+.toolbar-group,
+.legend,
+.subtabs,
+.card-actions{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
 }
-@media(max-width:600px) {
-  .topbar { padding:0 12px; }
-  .brand-sub { display:none; }
-  .live { display:none; }
-  .nav { padding:10px 12px; }
-  .main { padding:14px 10px 24px; }
-  .stats { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
-  .stat { padding:11px; }
-  .stat-value { font-size:21px; }
-  .printer-grid { grid-template-columns:1fr; }
-  .form-grid { grid-template-columns:1fr; }
-  .field.full { grid-column:auto; }
-  .job-row { align-items:flex-start; }
-  .job-row-side { flex-direction:column; align-items:flex-end; gap:5px; }
+
+.tab{
+  background:transparent;
+  color:var(--muted);
+  border-color:transparent;
 }
+
+.tab.active{
+  background:#26323e;
+  color:white;
+  border-color:#485565;
+  box-shadow:inset 0 -2px var(--green);
+}
+
+.section-title{
+  margin:0 0 5px;
+  font-size:20px;
+}
+
+.section-subtitle{
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:16px;
+}
+
+.panel,
+.stat-card,
+.printer-card,
+.job-card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:11px;
+  padding:15px;
+  margin-bottom:16px;
+}
+
+.toolbar-label,
+.field label{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.legend{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.legend span{
+  display:inline-flex;
+  gap:6px;
+  align-items:center;
+}
+
+.dot{
+  width:10px;
+  height:10px;
+  border-radius:3px;
+  display:inline-block;
+}
+
+/* =========================
+   TAKVİM
+========================= */
+
+.calendar-viewport{
+  position:relative;
+  overflow:auto;
+  max-height:72vh;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:#151b23;
+  isolation:isolate;
+  overscroll-behavior:contain;
+}
+
+.calendar{
+  position:relative;
+  min-width:max-content;
+}
+
+.calendar-header{
+  display:flex;
+  position:sticky;
+  top:0;
+  z-index:10;
+  background:#202a35;
+  border-bottom:1px solid #46515e;
+}
+
+.printer-heading{
+  width:var(--name-width);
+  min-width:var(--name-width);
+  padding:8px 5px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-size:10px;
+  font-weight:bold;
+  background:#202a35;
+  border-right:1px solid var(--border);
+  position:sticky;
+  left:0;
+  z-index:12;
+}
+
+.timeline-heading{
+  display:flex;
+  flex-direction:column;
+}
+
+.day-row,
+.hour-row{
+  display:flex;
+}
+
+.day-row{
+  height:38px;
+  border-bottom:1px solid #3b4653;
+}
+
+.day-heading{
+  flex:0 0 calc(var(--cell-width)*24);
+  width:calc(var(--cell-width)*24);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  white-space:nowrap;
+  font-size:12px;
+  font-weight:bold;
+  color:#e4ebf4;
+  border-right:1px solid #56616e;
+}
+
+.hour-row{
+  height:30px;
+}
+
+.hour-heading{
+  flex:0 0 var(--cell-width);
+  width:var(--cell-width);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#aeb9c7;
+  font-size:11px;
+  border-right:1px solid #35404c;
+}
+
+.printer-row{
+  display:flex;
+  height:var(--row-height);
+  border-bottom:1px solid #35404c;
+  position:relative;
+}
+
+.printer-name{
+  width:var(--name-width);
+  min-width:var(--name-width);
+  position:sticky;
+  left:0;
+  z-index:6;
+  background:#1b222c;
+  border-right:1px solid var(--border);
+  padding:7px 5px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+
+.printer-name strong{
+  font-size:11px;
+  word-break:break-word;
+}
+
+.printer-name small{
+  display:none;
+}
+
+.printer-timeline{
+  position:relative;
+  display:flex;
+  height:100%;
+}
+
+/* AÇIK MESAI / HAFTA SONU RENKLERİ */
+
+.calendar-cell{
+  flex:0 0 var(--cell-width);
+  width:var(--cell-width);
+  height:100%;
+  border-right:1px solid #2d3742;
+  background:#171e27;
+  cursor:pointer;
+  position:relative;
+}
+
+.calendar-cell:nth-child(24n + 1){
+  border-left:1px solid #4a5663;
+}
+
+/* Öncekinden çok daha açık yeşil */
+.calendar-cell.work-hours{
+  background:rgba(66,190,115,.075);
+}
+
+/* Hafta sonu çok açık kırmızı */
+.calendar-cell.weekend,
+.calendar-cell.weekend.work-hours,
+.calendar-cell.weekend.off-hours{
+  background:rgba(226,77,89,.055);
+}
+
+.calendar-cell.off-hours{
+  background:#151b23;
+}
+
+.calendar-cell:hover{
+  filter:brightness(1.25);
+}
+
+/* =========================
+   BAKIM / ARIZA
+========================= */
+
+.status-band{
+  position:absolute;
+  top:0;
+  height:100%;
+  z-index:2;
+  pointer-events:none;
+  border-radius:0;
+}
+
+.status-band.maintenance-band{
+  background:rgba(239,168,61,.28);
+  border-top:1px solid rgba(255,190,80,.4);
+  border-bottom:1px solid rgba(255,190,80,.4);
+}
+
+.status-band.fault-band{
+  background:rgba(240,76,88,.28);
+  border-top:1px solid rgba(255,100,110,.45);
+  border-bottom:1px solid rgba(255,100,110,.45);
+}
+
+/* =========================
+   İŞLER
+========================= */
+
+/*
+  İşler z-index:3 olduğu için
+  mesai / hafta sonu / bakım / arıza
+  arka planlarının üzerinde görünür.
+*/
+
+.job{
+  position:absolute;
+  top:8px;
+  height:calc(var(--row-height) - 16px);
+  min-width:8px;
+  z-index:3;
+  border-radius:5px;
+  padding:6px 7px;
+  overflow:hidden;
+  cursor:pointer;
+  border:1px solid rgba(255,255,255,.22);
+  color:white;
+}
+
+.job.pending{
+  background:#315f9b;
+}
+
+.job.running{
+  background:#28764f;
+}
+
+.job.completed{
+  background:rgba(112,124,137,.30);
+  border-color:rgba(200,210,220,.18);
+  color:rgba(240,245,250,.65);
+}
+
+.job strong{
+  display:block;
+  font-size:11px;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+
+.job small{
+  display:block;
+  margin-top:4px;
+  font-size:10px;
+  color:inherit;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* Baskı animasyonu */
+
+.job.running::after{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 -45%;
+  width:40%;
+  pointer-events:none;
+  background:linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.27),
+    transparent
+  );
+  animation:printSweep 2.2s linear infinite;
+}
+
+@keyframes printSweep{
+  from{left:-45%}
+  to{left:110%}
+}
+
+/* Yüzde */
+
+.job-progress{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:4;
+  font-size:10px;
+  white-space:nowrap;
+  pointer-events:none;
+  border-radius:4px;
+  padding:4px 6px;
+  font-weight:bold;
+  color:white;
+  background:#174d35;
+  border:1px solid #5ce6a0;
+}
+
+.job-progress.completed-progress{
+  background:rgba(80,91,103,.75);
+  border-color:rgba(220,230,240,.25);
+  color:rgba(255,255,255,.75);
+}
+
+/* =========================
+   ŞİMDİKİ ZAMAN ÇİZGİSİ
+========================= */
+
+.global-now-line{
+  position:absolute;
+  width:3px;
+  background:#39ff9a;
+  z-index:4;
+  pointer-events:none;
+  box-shadow:
+    0 0 5px #39ff9a,
+    0 0 12px rgba(57,255,154,.6);
+  animation:lineBlink 1.15s infinite;
+}
+
+.now-cap{
+  position:absolute;
+  z-index:4;
+  width:9px;
+  height:9px;
+  background:#39ff9a;
+  border-radius:50%;
+  transform:translate(-3px,-3px);
+  box-shadow:0 0 7px #39ff9a;
+  animation:lineBlink 1.15s infinite;
+  pointer-events:none;
+}
+
+@keyframes lineBlink{
+  0%,100%{opacity:1}
+  50%{opacity:.25}
+}
+
+/* =========================
+   DASHBOARD
+========================= */
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(130px,1fr));
+  gap:12px;
+  margin-bottom:16px;
+}
+
+.stat-card span{
+  display:block;
+  color:var(--muted);
+  font-size:12px;
+}
+
+.stat-card strong{
+  display:block;
+  font-size:28px;
+  margin-top:8px;
+}
+
+.subtab{
+  background:#1c242e;
+  color:var(--muted);
+  border:1px solid var(--border);
+  position:relative;
+  overflow:hidden;
+}
+
+.subtab[data-dash="printing"]{
+  background:linear-gradient(
+    110deg,
+    #173b2b,
+    #246b49,
+    #173b2b
+  );
+  background-size:220% 100%;
+  border-color:#328b60;
+  color:#9af0bd;
+  animation:tabGlow 3s linear infinite;
+}
+
+.subtab[data-dash="printing"]::after{
+  content:"";
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:-60%;
+  width:45%;
+  background:linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.16),
+    transparent
+  );
+  animation:tabSweep 2.6s linear infinite;
+  pointer-events:none;
+}
+
+.subtab.active{
+  color:white;
+  border-color:#667586;
+  background:#303c4a;
+}
+
+.subtab[data-dash="printing"].active{
+  background:linear-gradient(
+    110deg,
+    #19563a,
+    #29885a,
+    #19563a
+  );
+  border-color:#5ce6a0;
+}
+
+@keyframes tabGlow{
+  0%,100%{filter:brightness(.95)}
+  50%{filter:brightness(1.22)}
+}
+
+@keyframes tabSweep{
+  from{left:-60%}
+  to{left:120%}
+}
+
+.printer-grid{
+  display:grid;
+  grid-template-columns:
+    repeat(auto-fit,minmax(260px,1fr));
+  gap:12px;
+}
+
+/* Dashboard iş listeleri */
+
+.job-grid{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+
+/* Genel iş kartları */
+
+.job-card{
+  width:100%;
+  margin:0;
+  border-left:3px solid #526579;
+  border-radius:8px;
+}
+
+.job-card h3{
+  margin:0 0 8px;
+  font-size:15px;
+}
+
+.job-card p,
+.printer-card p{
+  margin:7px 0;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.5;
+}
+
+/*
+  BASKIDA SEKME:
+  Bilgiler yatayda yan yana,
+  dikey yükseklik azaltılmış.
+*/
+
+.job-card.printing-card{
+  display:grid;
+  grid-template-columns:
+    minmax(160px,1.5fr)
+    minmax(110px,1fr)
+    minmax(110px,1fr)
+    minmax(110px,1fr)
+    minmax(120px,1fr)
+    auto;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+}
+
+.job-card.printing-card h3{
+  margin:0;
+  min-width:0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.job-card.printing-card p{
+  margin:0;
+  white-space:nowrap;
+}
+
+.job-card.printing-card .printing-progress{
+  min-width:120px;
+}
+
+.job-card.printing-card .card-actions{
+  justify-content:flex-end;
+}
+
+/* Durum renkleri */
+
+.status-pill{
+  display:inline-block;
+  padding:4px 7px;
+  border-radius:5px;
+  font-size:10px;
+  font-weight:bold;
+  margin-bottom:8px;
+}
+
+.status-pill.available{
+  background:#183d58;
+  color:#79c9ff;
+  border:1px solid #3479a5;
+}
+
+.status-pill.printing{
+  background:#174b35;
+  color:#7ce5ae;
+  border:1px solid #329765;
+}
+
+.status-pill.maintenance{
+  background:#55391b;
+  color:#ffc16b;
+  border:1px solid #a96c25;
+}
+
+.status-pill.fault{
+  background:#541f28;
+  color:#ff8993;
+  border:1px solid #a83b48;
+}
+
+/* Dashboard ilerleme barı */
+
+.printer-progress{
+  height:10px;
+  width:100%;
+  overflow:hidden;
+  position:relative;
+  border-radius:10px;
+  background:#101720;
+  border:1px solid #35404d;
+  margin:10px 0 6px;
+}
+
+.printer-progress-fill{
+  height:100%;
+  width:0;
+  position:relative;
+  border-radius:inherit;
+  background:linear-gradient(
+    90deg,
+    #1c8d59,
+    #45e69b
+  );
+  transition:width .7s ease;
+}
+
+.printer-progress-fill::after{
+  content:"";
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:-45%;
+  width:40%;
+  background:linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.5),
+    transparent
+  );
+  animation:dashboardSweep 1.8s linear infinite;
+}
+
+@keyframes dashboardSweep{
+  from{left:-45%}
+  to{left:110%}
+}
+
+.printer-progress-caption{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  color:var(--muted);
+  font-size:11px;
+  margin-bottom:10px;
+}
+
+/* FORM */
+
+.form-grid{
+  display:grid;
+  grid-template-columns:
+    repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.field.full{
+  grid-column:1/-1;
+}
+
+.field input,
+.field select,
+.field textarea{
+  width:100%;
+  padding:10px;
+  color:var(--text);
+  background:#121821;
+  border:1px solid var(--border);
+  border-radius:6px;
+}
+
+.field textarea{
+  resize:vertical;
+  min-height:75px;
+}
+
+.duration-fields{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.modal-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.7);
+  z-index:100;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+}
+
+.modal-backdrop.open{
+  display:flex;
+}
+
+.modal{
+  width:min(620px,100%);
+  max-height:90vh;
+  overflow:auto;
+  background:#1b222c;
+  border:1px solid #4a5665;
+  border-radius:12px;
+  padding:20px;
+}
+
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:center;
+  margin-bottom:16px;
+}
+
+.modal-header h2{
+  margin:0;
+  font-size:18px;
+}
+
+.modal-footer{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:18px;
+  flex-wrap:wrap;
+}
+
+.hidden{
+  display:none!important;
+}
+
+.notice{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.5;
+  margin-top:10px;
+}
+
+.empty-state{
+  color:var(--muted);
+  text-align:center;
+  padding:25px;
+  font-size:13px;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:1000px){
+
+  .job-card.printing-card{
+    grid-template-columns:
+      minmax(150px,1.4fr)
+      repeat(3,minmax(100px,1fr))
+      auto;
+  }
+
+}
+
+@media(max-width:850px){
+
+  .stats{
+    grid-template-columns:
+      repeat(3,minmax(110px,1fr));
+  }
+
+  .job-card.printing-card{
+    grid-template-columns:
+      1fr 1fr 1fr;
+  }
+
+  .job-card.printing-card h3{
+    grid-column:1/-1;
+  }
+
+  .job-card.printing-card .printing-progress{
+    grid-column:1/-1;
+  }
+
+}
+
+@media(max-width:720px){
+
+  header{
+    padding:15px;
+    align-items:flex-start;
+  }
+
+  .brand h1{
+    font-size:16px;
+  }
+
+  .brand p{
+    font-size:10px;
+  }
+
+  .brand-mark{
+    width:36px;
+    height:36px;
+  }
+
+  .clock strong{
+    font-size:14px;
+  }
+
+  main{
+    padding:12px;
+  }
+
+  .stats{
+    grid-template-columns:
+      repeat(2,minmax(0,1fr));
+  }
+
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+
+  .field.full{
+    grid-column:auto;
+  }
+
+  .job-card.printing-card{
+    grid-template-columns:1fr 1fr;
+  }
+
+}
+
 </style>
 </head>
+
 <body>
-<div class="app">
-  <header class="topbar">
-    <div class="brand">
-      <div class="logo">R4</div>
-      <div>
-        <div class="brand-title">R4310 · PRINTFLOW 3D</div>
-        <div class="brand-sub">ÜRETİM PLANLAMA SİSTEMİ</div>
-      </div>
+
+<header>
+
+  <div class="brand">
+
+    <div class="brand-mark">
+      3D
     </div>
-    <div class="top-right">
-      <div class="live"><span class="live-dot"></span> CANLI TAKVİM</div>
-      <div class="clock">
-        <div id="clockTime" class="clock-time">--:--:--</div>
-        <div id="clockDate" class="clock-date">--</div>
-      </div>
+
+    <div>
+      <h1>R4310 - PRINTFLOW 3D</h1>
+      <p>ÜRETİM PLANLAMA VE TAKİP SİSTEMİ</p>
     </div>
-  </header>
 
-  <nav class="nav">
-    <button id="navCalendar" onclick="showPage('calendar')">Üretim Takvimi</button>
-    <button id="navDashboard" onclick="showPage('dashboard')">Dashboard</button>
-  </nav>
+  </div>
 
-  <main class="main">
-    <section id="calendarPage">
-      <div class="page-head">
-        <div>
-          <h1>Üretim Takvimi</h1>
-          <div class="subtitle">Yazıcı kapasitesi, baskı planı ve anlık üretim takibi</div>
-        </div>
-        <div class="actions">
-          <button class="btn" onclick="goToday()">Bugüne Git</button>
-          <button class="btn" onclick="changeRange(-1)">← Önceki</button>
-          <button class="btn" onclick="changeRange(1)">Sonraki →</button>
-          <button class="btn primary" onclick="openJobForm()">+ Baskı Ekle</button>
-        </div>
+  <div class="clock">
+    <div id="liveDate">
+      Tarih yükleniyor...
+    </div>
+
+    <strong id="liveTime">
+      --:--:--
+    </strong>
+  </div>
+
+</header>
+
+
+<main>
+
+  <div class="topbar">
+
+    <nav class="tabs">
+
+      <button
+        class="tab"
+        data-view="dashboard">
+        Dashboard
+      </button>
+
+      <button
+        class="tab active"
+        data-view="calendar">
+        Üretim Takvimi
+      </button>
+
+    </nav>
+
+
+    <div class="toolbar-group">
+
+      <span class="toolbar-label">
+        Takvim yakınlaştırma
+      </span>
+
+      <button id="zoomOut">
+        −
+      </button>
+
+      <button id="zoomIn">
+        +
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       DASHBOARD
+  ========================== -->
+
+  <section
+    id="dashboardView"
+    class="hidden">
+
+    <h2 class="section-title">
+      Dashboard
+    </h2>
+
+    <div class="section-subtitle">
+      Yazıcıların güncel durumunu ve üretim işlerini buradan yönetebilirsin.
+    </div>
+
+
+    <div class="stats">
+
+      <div class="stat-card">
+        <span>Toplam Yazıcı</span>
+        <strong id="statPrinters">0</strong>
       </div>
 
-      <div class="panel">
-        <div class="panel-head">
-          <div>
-            <div class="panel-title">30 GÜNLÜK PLAN</div>
-            <div id="rangeLabel" class="subtitle"></div>
-          </div>
-          <div class="calendar-toolbar">
-            <span class="zoom-label">Ölçek</span>
-            <button class="btn small" onclick="zoom(-1)">−</button>
-            <span id="zoomLabel" class="zoom-label">52 px / saat</span>
-            <button class="btn small" onclick="zoom(1)">+</button>
-          </div>
+      <div class="stat-card">
+        <span>Baskıda</span>
+        <strong id="statPrinting">0</strong>
+      </div>
+
+      <div class="stat-card">
+        <span>Boşta Yazıcı Sayısı</span>
+        <strong id="statIdle">0</strong>
+      </div>
+
+      <div class="stat-card">
+        <span>Bakım / Arıza</span>
+        <strong id="statUnavailable">0</strong>
+      </div>
+
+      <div class="stat-card">
+        <span>Planlanan İş</span>
+        <strong id="statPending">0</strong>
+      </div>
+
+    </div>
+
+
+    <div class="panel">
+
+      <div class="toolbar">
+
+        <div class="subtabs">
+
+          <button
+            class="subtab active"
+            data-dash="printers">
+            Yazıcılar
+          </button>
+
+          <button
+            class="subtab"
+            data-dash="printing">
+            Baskıda
+          </button>
+
+          <button
+            class="subtab"
+            data-dash="completed">
+            Tamamlanmış
+          </button>
+
+          <button
+            class="subtab"
+            data-dash="pending">
+            Basılacak
+          </button>
+
         </div>
-        <div class="calendar-outer">
-          <div id="calendarScroll" class="calendar-scroll">
-            <div id="calendar" class="calendar"></div>
-          </div>
+
+
+        <button
+          id="addPrinterDashboard"
+          class="primary">
+          + Yazıcı Ekle
+        </button>
+
+      </div>
+
+
+      <div id="dashboardContent"></div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================
+       TAKVİM
+  ========================== -->
+
+  <section id="calendarView">
+
+    <h2 class="section-title">
+      Üretim Takvimi
+    </h2>
+
+    <div class="section-subtitle">
+      Bir yazıcı satırındaki saat hücresine tıklayarak yeni iş ekleyebilirsin.
+    </div>
+
+
+    <div class="panel">
+
+      <div class="toolbar">
+
+        <div class="toolbar-group">
+
+          <button
+            class="primary"
+            id="addJobBtn">
+            + İş Ekle
+          </button>
+
         </div>
+
+
         <div class="legend">
-          <div class="legend-item"><span class="legend-dot" style="background:#188953"></span>Baskıda</div>
-          <div class="legend-item"><span class="legend-dot" style="background:#3d82b8"></span>Planlandı</div>
-          <div class="legend-item"><span class="legend-dot" style="background:#566c7b"></span>Tamamlandı</div>
-          <div class="legend-item"><span class="legend-swatch" style="background:#e7f4e9;border:1px solid #c7dfcc"></span>Mesai 08:00–16:00</div>
-          <div class="legend-item"><span class="legend-swatch" style="background:#f9e9e9;border:1px solid #e7cece"></span>Hafta sonu</div>
-          <div class="legend-item"><span class="legend-swatch" style="background:#eb9e3f66"></span>Bakım</div>
-          <div class="legend-item"><span class="legend-swatch" style="background:#f5535e66"></span>Arıza</div>
-        </div>
-      </div>
-    </section>
 
-    <section id="dashboardPage" hidden>
-      <div class="page-head">
-        <div>
-          <h1>Dashboard</h1>
-          <div class="subtitle">Yazıcıların ve üretim işlerinin genel durumu</div>
+          <span>
+            <i
+              class="dot"
+              style="background:#315f9b">
+            </i>
+            Planlandı
+          </span>
+
+          <span>
+            <i
+              class="dot"
+              style="background:#28764f">
+            </i>
+            Baskıda
+          </span>
+
+          <span>
+            <i
+              class="dot"
+              style="background:#7c8793">
+            </i>
+            Tamamlandı
+          </span>
+
+          <span>
+            <i
+              class="dot"
+              style="background:#39ff9a">
+            </i>
+            Şimdiki zaman
+          </span>
+
+          <span>
+            <i
+              class="dot"
+              style="background:#e9a83d">
+            </i>
+            Bakım
+          </span>
+
+          <span>
+            <i
+              class="dot"
+              style="background:#f04c58">
+            </i>
+            Arıza
+          </span>
+
+          <span>
+            <i
+              class="dot"
+              style="background:#66c987">
+            </i>
+            Hafta içi 08-16
+          </span>
+
+          <span>
+            <i
+              class="dot"
+              style="background:#c85d66">
+            </i>
+            Hafta sonu
+          </span>
+
         </div>
-        <div class="actions">
-          <button class="btn" onclick="openPrinterForm()">+ Yazıcı Ekle</button>
-          <button class="btn primary" onclick="openJobForm()">+ Baskı Ekle</button>
-        </div>
+
       </div>
 
-      <div id="stats" class="stats"></div>
-      <div class="dashboard-grid">
-        <div class="panel">
-          <div class="panel-head">
-            <div class="panel-title">YAZICI DURUMLARI</div>
-            <span id="printerCount" class="muted"></span>
-          </div>
-          <div id="printerGrid" class="printer-grid"></div>
-        </div>
-        <div class="panel">
-          <div class="panel-head">
-            <div class="panel-title">BASKIDA</div>
-            <span id="runningCount" class="muted"></span>
-          </div>
-          <div class="list-wrap"><div id="runningList" class="job-list"></div></div>
-        </div>
-        <div class="panel">
-          <div class="panel-head">
-            <div class="panel-title">SIRADAKİ BASKILAR</div>
-            <span id="pendingCount" class="muted"></span>
-          </div>
-          <div class="list-wrap"><div id="pendingList" class="job-list"></div></div>
-        </div>
-        <div class="panel">
-          <div class="panel-head">
-            <div class="panel-title">TAMAMLANAN BASKILAR</div>
-            <span id="completedCount" class="muted"></span>
-          </div>
-          <div class="list-wrap"><div id="completedList" class="job-list"></div></div>
-        </div>
-      </div>
-    </section>
-  </main>
-</div>
 
-<div id="jobModal" class="modal-backdrop" onclick="backdropClose(event,'jobModal')">
-  <div class="modal">
-    <div class="modal-head">
-      <h2 id="jobModalTitle">Yeni Baskı Planla</h2>
-      <button class="close-btn" onclick="closeModal('jobModal')">×</button>
+      <div
+        class="calendar-viewport"
+        id="calendarViewport">
+
+        <div
+          class="calendar"
+          id="calendar">
+        </div>
+
+      </div>
+
+
+      <div class="notice">
+        Bitiş zamanı, başlangıç saati ve toplam baskı süresinden otomatik hesaplanır.
+      </div>
+
     </div>
-    <form id="jobForm" onsubmit="saveJob(event)">
-      <div class="modal-body">
-        <input id="jobId" type="hidden">
-        <div class="form-grid">
-          <div class="field full">
-            <label for="jobName">İş / Parça Adı</label>
-            <input id="jobName" required maxlength="100" placeholder="Örn. Gövde Parçası">
-          </div>
-          <div class="field">
-            <label for="jobPrinter">Yazıcı</label>
-            <select id="jobPrinter" required></select>
-          </div>
-          <div class="field">
-            <label for="jobColor">Takvim Rengi</label>
-            <select id="jobColor">
-              <option value="green">Yeşil</option>
-              <option value="blue">Mavi</option>
-              <option value="purple">Mor</option>
-              <option value="orange">Turuncu</option>
-              <option value="teal">Turkuaz</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="jobStart">Başlangıç Tarih ve Saati</label>
-            <input id="jobStart" type="datetime-local" required>
-          </div>
-          <div class="field">
-            <label for="jobHours">Süre (saat)</label>
-            <input id="jobHours" type="number" min="0" max="999" value="2" required>
-          </div>
-          <div class="field">
-            <label for="jobMinutes">Ek Süre (dakika)</label>
-            <input id="jobMinutes" type="number" min="0" max="59" value="0" required>
-          </div>
-          <div class="field">
-            <label for="jobEndPreview">Tahmini Bitiş</label>
-            <input id="jobEndPreview" readonly>
-          </div>
-          <div class="field full">
-            <label for="jobNotes">Notlar (isteğe bağlı)</label>
-            <textarea id="jobNotes" placeholder="Malzeme, adet veya diğer bilgiler"></textarea>
-          </div>
-        </div>
-      </div>
-      <div class="modal-foot">
-        <button id="deleteJobBtn" type="button" class="btn danger" style="display:none" onclick="deleteJob()">Sil</button>
-        <div class="modal-foot-right">
-          <button type="button" class="btn" onclick="closeModal('jobModal')">Vazgeç</button>
-          <button type="submit" class="btn primary">Kaydet</button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
 
-<div id="printerModal" class="modal-backdrop" onclick="backdropClose(event,'printerModal')">
+  </section>
+
+</main>
+
+
+<!-- =========================
+     MODAL
+========================= -->
+
+<div
+  class="modal-backdrop"
+  id="modalBackdrop">
+
   <div class="modal">
-    <div class="modal-head">
-      <h2>Yazıcı Ekle</h2>
-      <button class="close-btn" onclick="closeModal('printerModal')">×</button>
+
+    <div class="modal-header">
+
+      <h2 id="modalTitle">
+        İş Ekle
+      </h2>
+
+      <button id="closeModal">
+        ✕
+      </button>
+
     </div>
-    <form onsubmit="savePrinter(event)">
-      <div class="modal-body">
-        <div class="form-grid">
-          <div class="field full">
-            <label for="printerNameInput">Yazıcı Adı</label>
-            <input id="printerNameInput" required maxlength="50" placeholder="Örn. PRINTER-01">
-          </div>
-          <div class="field full">
-            <label for="printerStatusInput">Başlangıç Durumu</label>
-            <select id="printerStatusInput">
-              <option value="idle">Boşta</option>
-              <option value="maintenance">Bakımda</option>
-              <option value="fault">Arızalı</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <div class="modal-foot">
-        <span></span>
-        <div class="modal-foot-right">
-          <button type="button" class="btn" onclick="closeModal('printerModal')">Vazgeç</button>
-          <button type="submit" class="btn primary">Yazıcı Ekle</button>
-        </div>
-      </div>
-    </form>
+
+    <div id="modalContent"></div>
+
   </div>
+
 </div>
 
-<div id="statusModal" class="modal-backdrop" onclick="backdropClose(event,'statusModal')">
-  <div class="modal">
-    <div class="modal-head">
-      <h2>Bakım / Arıza Planla</h2>
-      <button class="close-btn" onclick="closeModal('statusModal')">×</button>
-    </div>
-    <form onsubmit="saveStatus(event)">
-      <div class="modal-body">
-        <input id="statusPrinterId" type="hidden">
-        <div class="form-grid">
-          <div class="field full">
-            <label for="statusType">Durum</label>
-            <select id="statusType">
-              <option value="maintenance">Bakım</option>
-              <option value="fault">Arıza</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="statusStart">Başlangıç</label>
-            <input id="statusStart" type="datetime-local" required>
-          </div>
-          <div class="field">
-            <label for="statusEnd">Bitiş</label>
-            <input id="statusEnd" type="datetime-local" required>
-          </div>
-          <div class="field full">
-            <label for="statusNote">Açıklama</label>
-            <input id="statusNote" maxlength="120" placeholder="İsteğe bağlı açıklama">
-          </div>
-        </div>
-      </div>
-      <div class="modal-foot">
-        <span></span>
-        <div class="modal-foot-right">
-          <button type="button" class="btn" onclick="closeModal('statusModal')">Vazgeç</button>
-          <button type="submit" class="btn primary">Kaydet</button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
-
-<div id="toast" class="toast"></div>
 
 <script>
-const HOUR = 60 * 60 * 1000;
-const DAY = 24 * HOUR;
-const COLORS = {
-  green: '#188953',
-  blue: '#3d82b8',
-  purple: '#8065bf',
-  orange: '#b9782e',
-  teal: '#238d91'
-};
 
-let printers = [
-  { id:'p1', name:'PRINTER 01', status:'idle', statuses:[] },
-  { id:'p2', name:'PRINTER 02', status:'idle', statuses:[] },
-  { id:'p3', name:'PRINTER 03', status:'idle', statuses:[] },
-  { id:'p4', name:'PRINTER 04', status:'idle', statuses:[] },
-  { id:'p5', name:'PRINTER 05', status:'idle', statuses:[] },
-  { id:'p6', name:'PRINTER 06', status:'idle', statuses:[] }
+const HOUR=3600000;
+const DAY=86400000;
+
+let zoom=46;
+
+let activeView="calendar";
+let activeDashboardTab="printers";
+
+let editingJobId=null;
+let selectedCell=null;
+
+let nextId=1;
+
+let initialScrollDone=false;
+
+
+/* =========================
+   YAZICILAR
+========================= */
+
+const printers=[
+
+  {
+    id:"p1",
+    name:"R4310-01",
+    statuses:[]
+  },
+
+  {
+    id:"p2",
+    name:"R4310-02",
+    statuses:[]
+  },
+
+  {
+    id:"p3",
+    name:"R4310-03",
+    statuses:[]
+  },
+
+  {
+    id:"p4",
+    name:"R4310-04",
+    statuses:[]
+  },
+
+  {
+    id:"p5",
+    name:"R4310-05",
+    statuses:[]
+  }
+
 ];
 
-let jobs = [];
-let nextJobId = 1;
-let nextPrinterId = 7;
-let scale = 52;
-let page = 'calendar';
-let rangeStart = startOfDay(new Date());
-rangeStart.setDate(rangeStart.getDate() - 2);
-let initialScrollDone = false;
-let toastTimer;
 
-function startOfDay(d) {
-  const x = new Date(d);
-  x.setHours(0,0,0,0);
-  return x;
-}
-function pad(n) { return String(n).padStart(2,'0'); }
-function toLocalInput(d) {
-  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes());
-}
-function fromInput(s) { return new Date(s); }
-function fmtDate(d, options={day:'2-digit',month:'2-digit',year:'numeric'}) {
-  return new Intl.DateTimeFormat('tr-TR',options).format(d);
-}
-function fmtTime(d) { return pad(d.getHours())+':'+pad(d.getMinutes()); }
-function fmtDateTime(d) { return fmtDate(d,{day:'2-digit',month:'2-digit'})+' '+fmtTime(d); }
-function fmtDuration(ms) {
-  const total = Math.max(0,Math.round(ms/60000));
-  const h = Math.floor(total/60), m = total%60;
-  if (h && m) return h+' sa '+m+' dk';
-  if (h) return h+' sa';
-  return m+' dk';
-}
-function escapeHtml(s) {
-  return String(s ?? '').replace(/[&<>"']/g, c => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-  }[c]));
-}
-function statusLabel(s) {
-  return ({running:'Baskıda',idle:'Boşta',maintenance:'Bakımda',fault:'Arızalı'})[s] || s;
-}
-function statusClass(s) {
-  return ({running:'running',idle:'idle',maintenance:'maintenance',fault:'fault'})[s] || 'idle';
-}
-function jobState(j, now=new Date()) {
-  if (now >= j.end) return 'completed';
-  if (now >= j.start) return 'running';
-  return 'pending';
-}
-function getPrinter(id) { return printers.find(p=>p.id===id); }
-function jobProgress(j, now=new Date()) {
-  const duration = j.end-j.start;
-  if (duration <= 0) return 100;
-  return Math.max(0,Math.min(100,Math.round((now-j.start)/duration*100)));
-}
-function showToast(message) {
-  const el = document.getElementById('toast');
-  el.textContent = message;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>el.classList.remove('show'),3000);
-}
-function showPage(which) {
-  page = which;
-  document.getElementById('calendarPage').hidden = which !== 'calendar';
-  document.getElementById('dashboardPage').hidden = which !== 'dashboard';
-  document.getElementById('navCalendar').classList.toggle('active',which==='calendar');
-  document.getElementById('navDashboard').classList.toggle('active',which==='dashboard');
-  renderAll();
-}
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-function backdropClose(e,id) { if(e.target.id===id) closeModal(id); }
+const jobs=[];
 
-function updateClock() {
-  const now = new Date();
-  document.getElementById('clockTime').textContent =
-    pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
-  document.getElementById('clockDate').textContent =
-    new Intl.DateTimeFormat('tr-TR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}).format(now);
-}
-function changeRange(days) {
-  rangeStart.setDate(rangeStart.getDate()+days);
-  initialScrollDone = false;
-  renderCalendar();
-}
-function goToday() {
-  rangeStart = startOfDay(new Date());
-  rangeStart.setDate(rangeStart.getDate()-2);
-  initialScrollDone = false;
-  renderCalendar();
-}
-function zoom(direction) {
-  scale = Math.max(24,Math.min(100,scale+direction*8));
-  document.documentElement.style.setProperty('--hour-width',scale+'px');
-  document.getElementById('zoomLabel').textContent = scale+' px / saat';
-  renderCalendar();
-}
-function dateLabel(d) {
-  return new Intl.DateTimeFormat('tr-TR',{weekday:'short',day:'2-digit',month:'2-digit'}).format(d);
-}
-function getRangeEnd() {
-  const d = new Date(rangeStart);
-  d.setDate(d.getDate()+30);
-  return d;
-}
 
-function renderCalendar() {
-  const calendar = document.getElementById('calendar');
-  const scroll = document.getElementById('calendarScroll');
-  const oldScroll = scroll.scrollLeft;
-  const now = new Date();
-  const endRange = getRangeEnd();
-  const totalHours = 30*24;
-  const totalWidth = totalHours*scale;
-  calendar.style.width = 'max-content';
+/* =========================
+   TAKVİM BAŞLANGICI
+========================= */
 
-  document.getElementById('rangeLabel').textContent =
-    fmtDate(rangeStart)+' – '+fmtDate(new Date(endRange.getTime()-1));
+const calendarStart=new Date();
 
-  let html = '<div class="calendar-header"><div class="printer-head">YAZICI</div><div class="hours">';
-  for(let day=0;day<30;day++) {
-    const date = new Date(rangeStart);
-    date.setDate(date.getDate()+day);
-    const weekend = date.getDay()===0 || date.getDay()===6;
-    html += '<div class="day-group" style="width:'+(24*scale)+'px">';
-    html += '<div class="day-label" style="'+(weekend?'background:#f3e2e2;color:#6d5151;':'')+'">'+dateLabel(date)+'</div>';
-    html += '<div class="hour-labels">';
-    for(let h=0;h<24;h++) {
-      html += '<div class="hour-label '+(h===0?'day-boundary':'')+'" style="width:'+scale+'px;'+(weekend?'background:#f9eeee;color:#826c6c;':'')+'">'+pad(h)+'</div>';
-    }
-    html += '</div></div>';
-  }
-  html += '</div></div>';
+calendarStart.setHours(
+  0,
+  0,
+  0,
+  0
+);
 
-  printers.forEach(p=>{
-    html += '<div class="calendar-row">';
-    html += '<div class="printer-cell"><div class="printer-cell-name">'+escapeHtml(p.name)+'</div></div>';
-    html += '<div class="row-hours" style="width:'+totalWidth+'px">';
-    for(let day=0;day<30;day++) {
-      const date = new Date(rangeStart);
-      date.setDate(date.getDate()+day);
-      const weekend = date.getDay()===0 || date.getDay()===6;
-      for(let h=0;h<24;h++) {
-        const work = h>=8 && h<16;
-        let cls = 'hour-cell';
-        if(work) cls += ' work';
-        if(weekend) cls += ' weekend';
-        if(h===0) cls += ' day-boundary';
-        html += '<div class="'+cls+'" style="width:'+scale+'px"></div>';
+calendarStart.setDate(
+  calendarStart.getDate()-2
+);
+
+
+/* =========================
+   YARDIMCI
+========================= */
+
+const $=id=>
+  document.getElementById(id);
+
+
+const esc=v=>
+  String(v??"").replace(
+    /[&<>"']/g,
+    c=>({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#39;"
+    }[c])
+  );
+
+
+/* =========================
+   SAAT
+========================= */
+
+function updateClock(){
+
+  const n=new Date();
+
+  $("liveDate").textContent=
+    new Intl.DateTimeFormat(
+      "tr-TR",
+      {
+        weekday:"long",
+        year:"numeric",
+        month:"long",
+        day:"numeric"
       }
-    }
-    (p.statuses||[]).forEach(s=>{
-      const left = Math.max(0,(s.start-rangeStart)/HOUR*scale);
-      const right = Math.min(totalHours,(s.end-rangeStart)/HOUR)*scale;
-      if(right>left) {
-        html += '<div class="status-band '+s.type+'" title="'+escapeHtml(s.note||statusLabel(s.type))+'" style="left:'+left+'px;width:'+(right-left)+'px"></div>';
-      }
-    });
-    jobs.filter(j=>j.printerId===p.id).forEach(j=>{
-      const left = Math.max(0,(j.start-rangeStart)/HOUR*scale);
-      const right = Math.min(totalHours,(j.end-rangeStart)/HOUR)*scale;
-      if(right<=left) return;
-      const state = jobState(j,now);
-      const color = COLORS[j.color] || COLORS.green;
-      const progress = jobProgress(j,now);
-      html += '<div class="job-block '+state+'" data-job-id="'+j.id+'" title="'+escapeHtml(j.name)+' · '+fmtDateTime(j.start)+' – '+fmtDateTime(j.end)+'" style="left:'+left+'px;width:'+Math.max(4,right-left)+'px;background:'+color+'" onclick="editJob('+j.id+')">';
-      html += '<div class="job-block-title">'+escapeHtml(j.name)+'</div>';
-      html += '<div class="job-block-detail">'+fmtTime(j.start)+'–'+fmtTime(j.end)+' · '+fmtDuration(j.end-j.start)+'</div>';
-      if(state==='running' || state==='completed') {
-        html += '<div class="job-block-progress"><span style="width:'+progress+'%"></span></div>';
-      }
-      html += '</div>';
-    });
-    html += '</div></div>';
-  });
+    ).format(n);
 
-  calendar.innerHTML = html;
+  $("liveTime").textContent=
+    n.toLocaleTimeString("tr-TR");
 
-  const nowOffset = (now-rangeStart)/HOUR*scale;
-  if(nowOffset>=0 && nowOffset<=totalWidth) {
-    const line = document.createElement('div');
-    line.className = 'now-line';
-    line.style.left = 'calc(var(--name-width) + '+nowOffset+'px)';
-    line.style.height = (printers.length*76)+'px';
-    line.innerHTML = '<span class="now-label">ŞİMDİ '+fmtTime(now)+'</span>';
-    calendar.appendChild(line);
-  }
-
-  if(!initialScrollDone) {
-    const currentOffset = (now-rangeStart)/HOUR*scale;
-    scroll.scrollLeft = Math.max(0,currentOffset-scale*4);
-    initialScrollDone = true;
-  } else {
-    scroll.scrollLeft = oldScroll;
-  }
-
-  scroll.onwheel = e => {
-    if(Math.abs(e.deltaY)>Math.abs(e.deltaX)) {
-      scroll.scrollLeft += e.deltaY;
-      e.preventDefault();
-    }
-  };
 }
 
-function openJobForm(job=null) {
-  const form = document.getElementById('jobForm');
-  form.reset();
-  document.getElementById('jobId').value = job ? job.id : '';
-  document.getElementById('jobModalTitle').textContent = job ? 'Baskıyı Düzenle' : 'Yeni Baskı Planla';
-  document.getElementById('deleteJobBtn').style.display = job ? 'inline-block' : 'none';
-
-  const printerSelect = document.getElementById('jobPrinter');
-  printerSelect.innerHTML = printers.map(p=>'<option value="'+p.id+'">'+escapeHtml(p.name)+'</option>').join('');
-  if(job) {
-    document.getElementById('jobName').value = job.name;
-    document.getElementById('jobPrinter').value = job.printerId;
-    document.getElementById('jobColor').value = job.color || 'green';
-    document.getElementById('jobStart').value = toLocalInput(job.start);
-    const mins = Math.round((job.end-job.start)/60000);
-    document.getElementById('jobHours').value = Math.floor(mins/60);
-    document.getElementById('jobMinutes').value = mins%60;
-    document.getElementById('jobNotes').value = job.notes||'';
-  } else {
-    const start = new Date();
-    start.setMinutes(Math.ceil(start.getMinutes()/15)*15,0,0);
-    document.getElementById('jobStart').value = toLocalInput(start);
-    document.getElementById('jobHours').value = 2;
-    document.getElementById('jobMinutes').value = 0;
-    document.getElementById('jobColor').value = 'green';
-  }
-  updateEndPreview();
-  openModal('jobModal');
-}
-function editJob(id) {
-  const job = jobs.find(j=>j.id===id);
-  if(job) openJobForm(job);
-}
-function updateEndPreview() {
-  const startVal = document.getElementById('jobStart').value;
-  const hours = Number(document.getElementById('jobHours').value)||0;
-  const minutes = Number(document.getElementById('jobMinutes').value)||0;
-  if(!startVal) return;
-  const start = fromInput(startVal);
-  const end = new Date(start.getTime()+(hours*60+minutes)*60000);
-  document.getElementById('jobEndPreview').value =
-    Number.isNaN(end.getTime()) ? '' : fmtDateTime(end);
-}
-['jobStart','jobHours','jobMinutes'].forEach(id=>{
-  document.getElementById(id).addEventListener('input',updateEndPreview);
-});
-
-function saveJob(e) {
-  e.preventDefault();
-  const idValue = document.getElementById('jobId').value;
-  const id = idValue ? Number(idValue) : nextJobId++;
-  const name = document.getElementById('jobName').value.trim();
-  const printerId = document.getElementById('jobPrinter').value;
-  const color = document.getElementById('jobColor').value;
-  const start = fromInput(document.getElementById('jobStart').value);
-  const duration = (Number(document.getElementById('jobHours').value)||0)*60+
-    (Number(document.getElementById('jobMinutes').value)||0);
-  const end = new Date(start.getTime()+duration*60000);
-  const notes = document.getElementById('jobNotes').value.trim();
-
-  if(!name || Number.isNaN(start.getTime()) || duration<=0) {
-    showToast('Lütfen geçerli bir iş adı, başlangıç ve süre gir.');
-    return;
-  }
-  if(!getPrinter(printerId)) {
-    showToast('Lütfen geçerli bir yazıcı seç.');
-    return;
-  }
-  const conflict = jobs.find(j=>j.id!==id && j.printerId===printerId && start<j.end && end>j.start);
-  if(conflict) {
-    showToast('Bu yazıcıda seçilen zaman aralığında başka bir baskı var: '+conflict.name);
-    return;
-  }
-  const printer = getPrinter(printerId);
-  const blocked = (printer.statuses||[]).find(s=>start<s.end && end>s.start);
-  if(blocked) {
-    showToast('Seçilen zaman aralığı bakım veya arıza aralığıyla çakışıyor.');
-    return;
-  }
-  const job = {id,name,printerId,color,start,end,notes};
-  const index = jobs.findIndex(j=>j.id===id);
-  if(index>=0) jobs[index]=job; else jobs.push(job);
-  closeModal('jobModal');
-  renderAll();
-  showToast(index>=0?'Baskı güncellendi.':'Baskı planlandı.');
-}
-function deleteJob() {
-  const id = Number(document.getElementById('jobId').value);
-  jobs = jobs.filter(j=>j.id!==id);
-  closeModal('jobModal');
-  renderAll();
-  showToast('Baskı silindi.');
-}
-
-function openPrinterForm() {
-  document.getElementById('printerNameInput').value = '';
-  document.getElementById('printerStatusInput').value = 'idle';
-  openModal('printerModal');
-}
-function savePrinter(e) {
-  e.preventDefault();
-  const name = document.getElementById('printerNameInput').value.trim();
-  if(!name) return;
-  if(printers.some(p=>p.name.toLocaleLowerCase('tr')===name.toLocaleLowerCase('tr'))) {
-    showToast('Bu isimde bir yazıcı zaten var.');
-    return;
-  }
-  printers.push({id:'p'+nextPrinterId++,name,status:document.getElementById('printerStatusInput').value,statuses:[]});
-  closeModal('printerModal');
-  renderAll();
-  showToast('Yazıcı eklendi.');
-}
-function openStatusForm(printerId) {
-  const p = getPrinter(printerId);
-  if(!p) return;
-  document.getElementById('statusPrinterId').value = printerId;
-  document.getElementById('statusType').value = 'maintenance';
-  const start = new Date();
-  start.setMinutes(Math.ceil(start.getMinutes()/15)*15,0,0);
-  const end = new Date(start.getTime()+2*HOUR);
-  document.getElementById('statusStart').value = toLocalInput(start);
-  document.getElementById('statusEnd').value = toLocalInput(end);
-  document.getElementById('statusNote').value = '';
-  openModal('statusModal');
-}
-function saveStatus(e) {
-  e.preventDefault();
-  const printerId = document.getElementById('statusPrinterId').value;
-  const p = getPrinter(printerId);
-  const type = document.getElementById('statusType').value;
-  const start = fromInput(document.getElementById('statusStart').value);
-  const end = fromInput(document.getElementById('statusEnd').value);
-  const note = document.getElementById('statusNote').value.trim();
-  if(!p || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end<=start) {
-    showToast('Bitiş zamanı başlangıçtan sonra olmalı.');
-    return;
-  }
-  const jobConflict = jobs.find(j=>j.printerId===printerId && start<j.end && end>j.start);
-  if(jobConflict) {
-    showToast('Bu aralıkta planlı baskı var: '+jobConflict.name);
-    return;
-  }
-  if(!p.statuses) p.statuses=[];
-  p.statuses.push({id:Date.now(),type,start,end,note});
-  p.status = type;
-  closeModal('statusModal');
-  renderAll();
-  showToast(type==='fault'?'Arıza aralığı eklendi.':'Bakım aralığı eklendi.');
-}
-
-function effectivePrinterStatus(p,now=new Date()) {
-  const active = (p.statuses||[]).find(s=>now>=s.start && now<s.end);
-  if(active) return active.type;
-  const running = jobs.find(j=>j.printerId===p.id && jobState(j,now)==='running');
-  if(running) return 'running';
-  if(p.status==='fault' || p.status==='maintenance') return p.status;
-  return 'idle';
-}
-function activeJobForPrinter(p,now=new Date()) {
-  return jobs.find(j=>j.printerId===p.id && jobState(j,now)==='running');
-}
-function renderStats() {
-  const now = new Date();
-  const running = jobs.filter(j=>jobState(j,now)==='running');
-  const completed = jobs.filter(j=>jobState(j,now)==='completed');
-  const pending = jobs.filter(j=>jobState(j,now)==='pending');
-  const maintenance = printers.filter(p=>effectivePrinterStatus(p,now)==='maintenance').length;
-  const fault = printers.filter(p=>effectivePrinterStatus(p,now)==='fault').length;
-  const stats = [
-    ['TOPLAM YAZICI',printers.length,'Kayıtlı yazıcı',''],
-    ['BASKIDA',running.length,'Aktif üretim','green'],
-    ['TAMAMLANMIŞ',completed.length,'Biten işler',''],
-    ['BASILACAK',pending.length,'Planlanan işler','orange'],
-    ['BAKIM / ARIZA',maintenance+fault,maintenance+' bakım · '+fault+' arıza','red']
-  ];
-  document.getElementById('stats').innerHTML = stats.map(s=>
-    '<div class="stat"><div class="stat-label">'+s[0]+'</div><div class="stat-value '+s[3]+'">'+s[1]+'</div><div class="stat-note">'+s[2]+'</div></div>'
-  ).join('');
-}
-function renderPrinters() {
-  const now = new Date();
-  document.getElementById('printerCount').textContent = printers.length+' yazıcı';
-  document.getElementById('printerGrid').innerHTML = printers.map(p=>{
-    const status = effectivePrinterStatus(p,now);
-    const job = activeJobForPrinter(p,now);
-    const next = jobs.filter(j=>j.printerId===p.id && j.start>now).sort((a,b)=>a.start-b.start)[0];
-    let detail = 'Şu anda aktif iş yok';
-    let progress = 0;
-    if(job) {
-      detail = job.name;
-      progress = jobProgress(job,now);
-    } else if(next) detail = 'Sıradaki: '+next.name;
-    const statuses = (p.statuses||[]).filter(s=>s.end>now).length;
-    return '<div class="printer-card">'+
-      '<div class="printer-card-top"><div class="printer-name">'+escapeHtml(p.name)+'</div>'+
-      '<span class="pill '+statusClass(status)+'">'+statusLabel(status)+'</span></div>'+
-      '<div class="progress"><div class="progress-fill" style="width:'+progress+'%"></div></div>'+
-      '<div class="printer-meta"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escapeHtml(detail)+'</span><span>'+(job?progress+'%':statuses?'Planlı kayıt':'')+'</span></div>'+
-      '<div class="actions" style="margin-top:11px">'+
-      '<button class="btn small" onclick="openStatusForm(\''+p.id+'\')">Bakım / Arıza</button>'+
-      '</div></div>';
-  }).join('') || '<div class="empty">Henüz yazıcı eklenmedi.</div>';
-}
-function jobRow(j) {
-  const p = getPrinter(j.printerId);
-  const state = jobState(j);
-  const now = new Date();
-  const progress = jobProgress(j,now);
-  return '<div class="job-row"><div class="job-color" style="background:'+(COLORS[j.color]||COLORS.green)+'"></div>'+
-    '<div class="job-row-main"><div class="job-row-title">'+escapeHtml(j.name)+'</div>'+
-    '<div class="job-row-sub"><span>'+escapeHtml(p?p.name:'Silinmiş yazıcı')+'</span>'+
-    '<span>Başlangıç: '+fmtDateTime(j.start)+'</span>'+
-    '<span>Bitiş: '+fmtDateTime(j.end)+'</span>'+
-    '<span>Toplam: '+fmtDuration(j.end-j.start)+'</span>'+
-    (state==='running'?'<span>İlerleme: '+progress+'%</span>':'')+
-    '</div></div>'+
-    '<div class="job-row-side"><span class="pill '+statusClass(state==='running'?'running':state==='completed'?'idle':'idle')+'">'+(state==='running'?'Baskıda':state==='completed'?'Tamamlandı':'Planlandı')+'</span>'+
-    '<button class="btn small" onclick="editJob('+j.id+')">Düzenle</button></div></div>';
-}
-function renderJobLists() {
-  const now = new Date();
-  const running = jobs.filter(j=>jobState(j,now)==='running').sort((a,b)=>a.start-b.start);
-  const pending = jobs.filter(j=>jobState(j,now)==='pending').sort((a,b)=>a.start-b.start);
-  const completed = jobs.filter(j=>jobState(j,now)==='completed').sort((a,b)=>b.end-a.end);
-  document.getElementById('runningCount').textContent = running.length+' iş';
-  document.getElementById('pendingCount').textContent = pending.length+' iş';
-  document.getElementById('completedCount').textContent = completed.length+' iş';
-  document.getElementById('runningList').innerHTML = running.map(jobRow).join('') || '<div class="empty">Şu anda baskıda iş yok.</div>';
-  document.getElementById('pendingList').innerHTML = pending.map(jobRow).join('') || '<div class="empty">Sırada bekleyen iş yok.</div>';
-  document.getElementById('completedList').innerHTML = completed.map(jobRow).join('') || '<div class="empty">Tamamlanan iş yok.</div>';
-}
-function renderAll() {
-  if(page==='calendar') renderCalendar();
-  renderStats();
-  renderPrinters();
-  renderJobLists();
-}
-
-document.documentElement.style.setProperty('--hour-width',scale+'px');
-document.getElementById('zoomLabel').textContent = scale+' px / saat';
-showPage('calendar');
 updateClock();
-setInterval(updateClock,1000);
-setInterval(()=>{
-  if(page==='calendar') renderCalendar();
-  renderStats();
-  renderPrinters();
-  renderJobLists();
-},15000);
+
+setInterval(
+  updateClock,
+  1000
+);
+
+
+/* =========================
+   TARİH
+========================= */
+
+function fmtDate(d){
+
+  return new Intl.DateTimeFormat(
+    "tr-TR",
+    {
+      day:"2-digit",
+      month:"2-digit",
+      year:"numeric"
+    }
+  ).format(d);
+
+}
+
+
+function fmtTime(d){
+
+  return new Intl.DateTimeFormat(
+    "tr-TR",
+    {
+      hour:"2-digit",
+      minute:"2-digit",
+      hour12:false
+    }
+  ).format(d);
+
+}
+
+
+function fmtDT(d){
+
+  return fmtDate(d)+" "+fmtTime(d);
+
+}
+
+
+function toInput(d){
+
+  return new Date(
+    d.getTime()-
+    d.getTimezoneOffset()*60000
+  )
+  .toISOString()
+  .slice(0,16);
+
+}
+
+
+function fromInput(v){
+
+  return new Date(v);
+
+}
+
+
+/* =========================
+   BULUCULAR
+========================= */
+
+function printerById(id){
+
+  return printers.find(
+    p=>p.id===id
+  );
+
+}
+
+
+function jobById(id){
+
+  return jobs.find(
+    j=>j.id===id
+  );
+
+}
+
+
+/* =========================
+   İŞ DURUMU
+========================= */
+
+function jobState(
+  j,
+  n=new Date()
+){
+
+  if(j.end<=n)
+    return "completed";
+
+  if(j.start<=n)
+    return "running";
+
+  return "pending";
+
+}
+
+
+/* =========================
+   YAZICI DURUMU
+========================= */
+
+function activeStatus(
+  p,
+  t=new Date()
+){
+
+  return p.statuses.find(
+    s=>
+      s.start<=t &&
+      (
+        s.end===null ||
+        s.end>t
+      )
+  )||null;
+
+}
+
+
+/* =========================
+   ÇAKIŞMA
+========================= */
+
+function overlap(
+  a,
+  b,
+  c,
+  d
+){
+
+  return a<d && c<b;
+
+}
+
+
+/* =========================
+   SÜRE
+========================= */
+
+function formatDuration(ms){
+
+  const total=Math.max(
+    0,
+    Math.round(ms/60000)
+  );
+
+  const hours=Math.floor(
+    total/60
+  );
+
+  const minutes=total%60;
+
+  if(hours===0)
+    return `${minutes} dk`;
+
+  if(minutes===0)
+    return `${hours} sa`;
+
+  return `${hours} sa ${minutes} dk`;
+
+}
+
+
+function getPrinterSummary(p){
+
+  const s=activeStatus(p);
+
+  if(!s)
+    return "Durum: Müsait";
+
+  if(s.type==="maintenance")
+    return "Durum: Bakım";
+
+  return "Durum: Arıza";
+
+}
+
+
+/* =========================
+   ÇAKIŞMA KONTROLÜ
+========================= */
+
+function conflict(
+  pid,
+  start,
+  end,
+  exclude=null
+){
+
+  if(
+    jobs.some(
+      j=>
+        j.printerId===pid &&
+        j.id!==exclude &&
+        overlap(
+          start,
+          end,
+          j.start,
+          j.end
+        )
+    )
+  ){
+
+    return "Bu yazıcıda seçilen saatlerde başka bir iş bulunuyor.";
+
+  }
+
+
+  const p=printerById(pid);
+
+  if(
+    p &&
+    p.statuses.some(
+      s=>
+        overlap(
+          start,
+          end,
+          s.start,
+          s.end ||
+          new Date("2999-12-31")
+        )
+    )
+  ){
+
+    return "Bu yazıcı seçilen zaman aralığında bakımda veya arızalı.";
+
+  }
+
+  return "";
+
+}
+
+
+/* =========================
+   ZOOM
+========================= */
+
+function setZoom(v){
+
+  const viewport=
+    $("calendarViewport");
+
+  const oldZoom=zoom;
+
+  const oldScroll=
+    viewport.scrollLeft;
+
+  zoom=Math.max(
+    28,
+    Math.min(
+      144,
+      v
+    )
+  );
+
+  document.documentElement.style.setProperty(
+    "--cell-width",
+    zoom+"px"
+  );
+
+  renderCalendar();
+
+  viewport.scrollLeft=
+    oldScroll*
+    (zoom/oldZoom);
+
+}
+
+
+$("zoomIn").onclick=()=>
+  setZoom(zoom+16);
+
+
+$("zoomOut").onclick=()=>
+  setZoom(zoom-16);
+
+
+/* =========================
+   TAKVİM
+========================= */
+
+function renderCalendar(){
+
+  const root=$("calendar");
+
+  root.innerHTML="";
+
+  const now=new Date();
+
+  const days=30;
+
+  const startMs=
+    calendarStart.getTime();
+
+  const endMs=
+    startMs+
+    days*DAY;
+
+  const nowVisible=
+    now.getTime()>=startMs &&
+    now.getTime()<endMs;
+
+
+  /* HEADER */
+
+  const header=
+    document.createElement("div");
+
+  header.className=
+    "calendar-header";
+
+
+  const printerHeading=
+    document.createElement("div");
+
+  printerHeading.className=
+    "printer-heading";
+
+  printerHeading.textContent=
+    "YAZICILAR";
+
+  header.appendChild(
+    printerHeading
+  );
+
+
+  const timelineHeading=
+    document.createElement("div");
+
+  timelineHeading.className=
+    "timeline-heading";
+
+
+  const dayRow=
+    document.createElement("div");
+
+  dayRow.className=
+    "day-row";
+
+
+  const hourRow=
+    document.createElement("div");
+
+  hourRow.className=
+    "hour-row";
+
+
+  for(
+    let d=0;
+    d<days;
+    d++
+  ){
+
+    const day=
+      new Date(
+        startMs+
+        d*DAY
+      );
+
+
+    const dayHeading=
+      document.createElement("div");
+
+    dayHeading.className=
+      "day-heading";
+
+
+    dayHeading.textContent=
+      new Intl.DateTimeFormat(
+        "tr-TR",
+        {
+          weekday:"long"
+        }
+      ).format(day)
+      +" · "+
+      fmtDate(day);
+
+
+    dayRow.appendChild(
+      dayHeading
+    );
+
+
+    for(
+      let h=0;
+      h<24;
+      h++
+    ){
+
+      const hourHeading=
+        document.createElement("div");
+
+      hourHeading.className=
+        "hour-heading";
+
+      hourHeading.textContent=
+        String(h).padStart(
+          2,
+          "0"
+        );
+
+      hourRow.appendChild(
+        hourHeading
+      );
+
+    }
+
+  }
+
+
+  timelineHeading.append(
+    dayRow,
+    hourRow
+  );
+
+  header.appendChild(
+    timelineHeading
+  );
+
+  root.appendChild(
+    header
+  );
+
+
+  /* YAZICI SATIRLARI */
+
+  printers.forEach(
+    p=>{
+
+      const row=
+        document.createElement(
+          "div"
+        );
+
+      row.className=
+        "printer-row";
+
+
+      const printerName=
+        document.createElement(
+          "div"
+        );
+
+      printerName.className=
+        "printer-name";
+
+
+      printerName.innerHTML=`
+        <strong>
+          ${esc(p.name)}
+        </strong>
+      `;
+
+
+      row.appendChild(
+        printerName
+      );
+
+
+      const timeline=
+        document.createElement(
+          "div"
+        );
+
+      timeline.className=
+        "printer-timeline";
+
+
+      /* HÜCRELER */
+
+      for(
+        let i=0;
+        i<days*24;
+        i++
+      ){
+
+        const date=
+          new Date(
+            startMs+
+            i*HOUR
+          );
+
+
+        const cell=
+          document.createElement(
+            "div"
+          );
+
+        cell.className=
+          "calendar-cell";
+
+
+        const isWeekend=
+          date.getDay()===0 ||
+          date.getDay()===6;
+
+
+        const isWorkingHour=
+          date.getHours()>=8 &&
+          date.getHours()<16;
+
+
+        if(isWeekend){
+
+          cell.classList.add(
+            "weekend"
+          );
+
+        }
+        else if(isWorkingHour){
+
+          cell.classList.add(
+            "work-hours"
+          );
+
+        }
+        else{
+
+          cell.classList.add(
+            "off-hours"
+          );
+
+        }
+
+
+        cell.title=
+          `${p.name} · ${fmtDT(date)} — İş eklemek için tıkla`;
+
+
+        cell.onclick=()=>{
+
+          const status=
+            p.statuses.find(
+              s=>
+                overlap(
+                  date,
+                  new Date(
+                    date.getTime()+
+                    HOUR
+                  ),
+                  s.start,
+                  s.end ||
+                  new Date(
+                    "2999-12-31"
+                  )
+                )
+            );
+
+
+          if(status){
+
+            openStatusForEdit(
+              p.id,
+              status.id
+            );
+
+            return;
+
+          }
+
+
+          openJobModal(
+            null,
+            {
+              printerId:p.id,
+              start:date
+            }
+          );
+
+        };
+
+
+        timeline.appendChild(
+          cell
+        );
+
+      }
+
+
+      /* BAKIM / ARIZA */
+
+      p.statuses.forEach(
+        s=>{
+
+          const bandStart=
+            Math.max(
+              s.start.getTime(),
+              startMs
+            );
+
+
+          const bandEnd=
+            Math.min(
+              (
+                s.end ||
+                new Date(
+                  "2999-12-31"
+                )
+              ).getTime(),
+              endMs
+            );
+
+
+          if(
+            bandEnd<=bandStart
+          )
+            return;
+
+
+          const band=
+            document.createElement(
+              "div"
+            );
+
+
+          band.className=
+            "status-band "+
+            (
+              s.type==="fault"
+              ?
+              "fault-band"
+              :
+              "maintenance-band"
+            );
+
+
+          band.style.left=
+            (
+              (
+                bandStart-startMs
+              )/
+              HOUR*
+              zoom
+            )+
+            "px";
+
+
+          band.style.width=
+            (
+              (
+                bandEnd-bandStart
+              )/
+              HOUR*
+              zoom
+            )+
+            "px";
+
+
+          band.title=
+            (
+              s.type==="fault"
+              ?
+              "ARIZA"
+              :
+              "BAKIM"
+            )+
+            " · "+
+            (
+              s.note ||
+              "Açıklama yok"
+            );
+
+
+          timeline.appendChild(
+            band
+          );
+
+        }
+      );
+
+
+      /* İŞLER */
+
+      jobs
+        .filter(
+          j=>
+            j.printerId===p.id &&
+            j.end>
+              new Date(startMs) &&
+            j.start<
+              new Date(endMs)
+        )
+        .forEach(
+          j=>{
+
+            const clipStart=
+              Math.max(
+                j.start.getTime(),
+                startMs
+              );
+
+
+            const clipEnd=
+              Math.min(
+                j.end.getTime(),
+                endMs
+              );
+
+
+            const left=
+              (
+                clipStart-startMs
+              )/
+              HOUR*
+              zoom;
+
+
+            const width=
+              (
+                clipEnd-clipStart
+              )/
+              HOUR*
+              zoom;
+
+
+            const state=
+              jobState(
+                j,
+                now
+              );
+
+
+            const totalDuration=
+              formatDuration(
+                j.end-j.start
+              );
+
+
+            const block=
+              document.createElement(
+                "div"
+              );
+
+
+            block.className=
+              "job "+
+              state;
+
+
+            block.style.left=
+              left+"px";
+
+
+            block.style.width=
+              Math.max(
+                width,
+                8
+              )+"px";
+
+
+            block.innerHTML=`
+              <strong>
+                ${esc(j.name)}
+              </strong>
+
+              <small>
+                ${fmtTime(j.start)}–${fmtTime(j.end)}
+              </small>
+
+              <small>
+                Toplam: ${totalDuration}
+              </small>
+            `;
+
+
+            block.title=
+              `${j.name} · `+
+              `${fmtDT(j.start)} - `+
+              `${fmtDT(j.end)} · `+
+              `Toplam baskı: ${totalDuration}`;
+
+
+            block.onclick=e=>{
+
+              e.stopPropagation();
+
+              openJobModal(
+                j.id
+              );
+
+            };
+
+
+            timeline.appendChild(
+              block
+            );
+
+
+            /* Başlamamış işlerde yüzde yok */
+
+            if(
+              state==="pending"
+            )
+              return;
+
+
+            const pct=
+              state==="completed"
+              ?
+              100
+              :
+              Math.max(
+                0,
+                Math.min(
+                  100,
+                  Math.floor(
+                    (
+                      now-j.start
+                    )/
+                    (
+                      j.end-j.start
+                    )*
+                    100
+                  )
+                )
+              );
+
+
+            const label=
+              document.createElement(
+                "div"
+              );
+
+
+            label.className=
+              "job-progress"+
+              (
+                state==="completed"
+                ?
+                " completed-progress"
+                :
+                ""
+              );
+
+
+            label.textContent=
+              `%${pct}`;
+
+
+            if(
+              state==="completed"
+            ){
+
+              label.style.left=
+                (
+                  left+
+                  Math.max(
+                    0,
+                    width-44
+                  )
+                )+
+                "px";
+
+            }
+            else{
+
+              const nowX=
+                (
+                  now.getTime()-
+                  startMs
+                )/
+                HOUR*
+                zoom;
+
+
+              const labelWidth=38;
+
+              const desired=
+                nowX-
+                labelWidth/2;
+
+
+              label.style.left=
+                Math.max(
+                  left,
+                  Math.min(
+                    left+
+                    width-
+                    labelWidth,
+                    desired
+                  )
+                )+
+                "px";
+
+            }
+
+
+            timeline.appendChild(
+              label
+            );
+
+          }
+        );
+
+
+      row.appendChild(
+        timeline
+      );
+
+      root.appendChild(
+        row
+      );
+
+    }
+  );
+
+
+  /* ŞİMDİKİ ZAMAN */
+
+  if(nowVisible){
+
+    const x=
+      (
+        now.getTime()-
+        startMs
+      )/
+      HOUR*
+      zoom;
+
+
+    const line=
+      document.createElement(
+        "div"
+      );
+
+    line.className=
+      "global-now-line";
+
+
+    line.style.left=
+      `calc(
+        var(--name-width) +
+        ${x}px
+      )`;
+
+
+    line.style.top=
+      "72px";
+
+
+    line.style.height=
+      `${printers.length*76}px`;
+
+
+    root.appendChild(
+      line
+    );
+
+
+    const cap=
+      document.createElement(
+        "div"
+      );
+
+
+    cap.className=
+      "now-cap";
+
+
+    cap.style.left=
+      `calc(
+        var(--name-width) +
+        ${x}px
+      )`;
+
+
+    cap.style.top=
+      "72px";
+
+
+    root.appendChild(
+      cap
+    );
+
+  }
+
+
+  /* İLK AÇILIŞTA ŞİMDİYE GİT */
+
+  if(
+    !initialScrollDone &&
+    nowVisible
+  ){
+
+    const viewport=
+      $("calendarViewport");
+
+
+    const x=
+      (
+        now.getTime()-
+        startMs
+      )/
+      HOUR*
+      zoom;
+
+
+    viewport.scrollLeft=
+      Math.max(
+        0,
+        x-
+        viewport.clientWidth*.35
+      );
+
+
+    initialScrollDone=true;
+
+  }
+
+}
+
+
+/* =========================
+   DASHBOARD YAZICI DETAYI
+========================= */
+
+function printerDetails(p){
+
+  const now=new Date();
+
+  const status=
+    activeStatus(
+      p,
+      now
+    );
+
+
+  if(status){
+
+    return {
+
+      label:
+        status.type==="fault"
+        ?
+        "Arızalı"
+        :
+        "Bakımda",
+
+      cls:
+        status.type,
+
+      details:
+        "Başlangıç: "+
+        fmtDT(
+          status.start
+        ),
+
+      note:
+        status.note ||
+        "Açıklama girilmedi"
+
+    };
+
+  }
+
+
+  const job=
+    jobs.find(
+      j=>
+        j.printerId===p.id &&
+        j.start<=now &&
+        j.end>now
+    );
+
+
+  if(job){
+
+    return {
+
+      label:"Baskıda",
+
+      cls:"printing",
+
+      details:
+        "Bitiş: "+
+        fmtDT(
+          job.end
+        ),
+
+      note:
+        job.name
+
+    };
+
+  }
+
+
+  return {
+
+    label:"Müsait",
+
+    cls:"available",
+
+    details:
+      "Yazıcı şu anda boş.",
+
+    note:""
+
+  };
+
+}
+
+
+/* =========================
+   DASHBOARD
+========================= */
+
+function renderDashboard(){
+
+  const content=
+    $("dashboardContent");
+
+  content.innerHTML="";
+
+
+  document
+    .querySelectorAll(
+      "[data-dash]"
+    )
+    .forEach(
+      b=>{
+        b.classList.toggle(
+          "active",
+          b.dataset.dash===
+          activeDashboardTab
+        );
+      }
+    );
+
+
+  const now=
+    new Date();
+
+
+  const printingPrinters=
+    printers.filter(
+      p=>
+        !activeStatus(
+          p,
+          now
+        ) &&
+        jobs.some(
+          j=>
+            j.printerId===p.id &&
+            j.start<=now &&
+            j.end>now
+        )
+    );
+
+
+  const unavailablePrinters=
+    printers.filter(
+      p=>
+        !!activeStatus(
+          p,
+          now
+        )
+    );
+
+
+  const idlePrinters=
+    printers.filter(
+      p=>
+        !activeStatus(
+          p,
+          now
+        ) &&
+        !jobs.some(
+          j=>
+            j.printerId===p.id &&
+            j.start<=now &&
+            j.end>now
+        )
+    );
+
+
+  $("statPrinters").textContent=
+    printers.length;
+
+  $("statPrinting").textContent=
+    printingPrinters.length;
+
+  $("statIdle").textContent=
+    idlePrinters.length;
+
+  $("statUnavailable").textContent=
+    unavailablePrinters.length;
+
+  $("statPending").textContent=
+    jobs.filter(
+      j=>
+        j.start>now
+    ).length;
+
+
+  /* =====================
+     YAZICILAR
+  ===================== */
+
+  if(
+    activeDashboardTab===
+    "printers"
+  ){
+
+    const grid=
+      document.createElement(
+        "div"
+      );
+
+    grid.className=
+      "printer-grid";
+
+
+    printers.forEach(
+      p=>{
+
+        const details=
+          printerDetails(
+            p
+          );
+
+
+        const card=
+          document.createElement(
+            "div"
+          );
+
+        card.className=
+          "printer-card";
+
+
+        const currentJob=
+          jobs.find(
+            j=>
+              j.printerId===p.id &&
+              j.start<=now &&
+              j.end>now
+          );
+
+
+        let progressHTML="";
+
+
+        if(
+          currentJob &&
+          !activeStatus(
+            p,
+            now
+          )
+        ){
+
+          const pct=
+            Math.max(
+              0,
+              Math.min(
+                100,
+                Math.floor(
+                  (
+                    now-
+                    currentJob.start
+                  )/
+                  (
+                    currentJob.end-
+                    currentJob.start
+                  )*
+                  100
+                )
+              )
+            );
+
+
+          const remaining=
+            Math.max(
+              0,
+              Math.ceil(
+                (
+                  currentJob.end-
+                  now
+                )/
+                60000
+              )
+            );
+
+
+          progressHTML=`
+
+            <p>
+              <strong>
+                Basılmakta olan parça:
+              </strong>
+
+              ${esc(
+                currentJob.name
+              )}
+            </p>
+
+            <div class="printer-progress">
+
+              <div
+                class="printer-progress-fill"
+                style="width:${pct}%">
+              </div>
+
+            </div>
+
+            <div
+              class="printer-progress-caption">
+
+              <span>
+                %${pct} tamamlandı
+              </span>
+
+              <span>
+                Kalan:
+                ${Math.floor(
+                  remaining/60
+                )} sa
+                ${remaining%60} dk
+              </span>
+
+            </div>
+          `;
+
+        }
+
+
+        card.innerHTML=`
+
+          <span
+            class="status-pill ${details.cls}">
+            ${esc(details.label)}
+          </span>
+
+          <h3>
+            ${esc(p.name)}
+          </h3>
+
+          ${progressHTML}
+
+          <p>
+            ${esc(details.details)}
+          </p>
+
+          <p>
+            ${esc(details.note)}
+          </p>
+
+          <div class="card-actions">
+
+            <button
+              class="small"
+              data-edit-name="${p.id}">
+              Adını Düzenle
+            </button>
+
+            <button
+              class="small primary"
+              data-edit-status="${p.id}">
+              Durum Güncelle
+            </button>
+
+          </div>
+        `;
+
+
+        grid.appendChild(
+          card
+        );
+
+      }
+    );
+
+
+    content.appendChild(
+      grid
+    );
+
+    return;
+
+  }
+
+
+  /* =====================
+     DİĞER DASHBOARD
+     SEKME LİSTELERİ
+  ===================== */
+
+  const list=
+    jobs
+      .filter(
+        j=>{
+
+          const state=
+            jobState(
+              j,
+              now
+            );
+
+
+          if(
+            activeDashboardTab===
+            "printing"
+          )
+            return state==="running";
+
+
+          if(
+            activeDashboardTab===
+            "completed"
+          )
+            return state==="completed";
+
+
+          return state==="pending";
+
+        }
+      )
+      .sort(
+        (a,b)=>
+          a.start-b.start
+      );
+
+
+  if(!list.length){
+
+    content.innerHTML=
+      `
+      <div class="empty-state">
+        Bu bölümde henüz iş bulunmuyor.
+      </div>
+      `;
+
+    return;
+
+  }
+
+
+  const grid=
+    document.createElement(
+      "div"
+    );
+
+  grid.className=
+    "job-grid";
+
+
+  list.forEach(
+    j=>{
+
+      const p=
+        printerById(
+          j.printerId
+        );
+
+
+      const state=
+        jobState(
+          j,
+          now
+        );
+
+
+      const card=
+        document.createElement(
+          "div"
+        );
+
+
+      /*
+        Baskıda sekmesinde kompakt
+        yatay görünüm kullanılıyor.
+      */
+
+      if(
+        activeDashboardTab===
+        "printing"
+      ){
+
+        card.className=
+          "job-card printing-card";
+
+
+        const pct=
+          Math.max(
+            0,
+            Math.min(
+              100,
+              Math.floor(
+                (
+                  now-j.start
+                )/
+                (
+                  j.end-j.start
+                )*
+                100
+              )
+            )
+          );
+
+
+        const remaining=
+          Math.max(
+            0,
+            Math.ceil(
+              (
+                j.end-now
+              )/
+              60000
+            )
+          );
+
+
+        card.innerHTML=`
+
+          <h3
+            title="${esc(j.name)}">
+
+            ${esc(j.name)}
+
+          </h3>
+
+
+          <p>
+            <strong>
+              Yazıcı:
+            </strong>
+
+            ${esc(
+              p?.name ||
+              "Silinmiş yazıcı"
+            )}
+
+          </p>
+
+
+          <p>
+            <strong>
+              Başlangıç:
+            </strong>
+
+            ${fmtDT(j.start)}
+
+          </p>
+
+
+          <p>
+            <strong>
+              Bitiş:
+            </strong>
+
+            ${fmtDT(j.end)}
+
+          </p>
+
+
+          <p>
+            <strong>
+              Toplam:
+            </strong>
+
+            ${formatDuration(
+              j.end-j.start
+            )}
+
+          </p>
+
+
+          <div class="printing-progress">
+
+            <div class="printer-progress">
+
+              <div
+                class="printer-progress-fill"
+                style="width:${pct}%">
+              </div>
+
+            </div>
+
+
+            <div
+              class="printer-progress-caption">
+
+              <span>
+                %${pct}
+              </span>
+
+              <span>
+                Kalan:
+                ${Math.floor(
+                  remaining/60
+                )} sa
+                ${remaining%60} dk
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <div class="card-actions">
+
+            <button
+              class="small"
+              data-edit-job="${j.id}">
+              Düzenle
+            </button>
+
+          </div>
+
+        `;
+
+
+      }
+
+      else{
+
+        card.className=
+          "job-card";
+
+
+        let progressHTML="";
+
+
+        if(
+          state==="running"
+        ){
+
+          const pct=
+            Math.max(
+              0,
+              Math.min(
+                100,
+                Math.floor(
+                  (
+                    now-j.start
+                  )/
+                  (
+                    j.end-j.start
+                  )*
+                  100
+                )
+              )
+            );
+
+
+          progressHTML=`
+
+            <div class="printer-progress">
+
+              <div
+                class="printer-progress-fill"
+                style="width:${pct}%">
+              </div>
+
+            </div>
+
+            <div
+              class="printer-progress-caption">
+
+              <span>
+                %${pct} tamamlandı
+              </span>
+
+              <span>
+                Baskı devam ediyor
+              </span>
+
+            </div>
+
+          `;
+
+        }
+
+
+        card.innerHTML=`
+
+          <h3>
+            ${esc(j.name)}
+          </h3>
+
+          <p>
+            <strong>
+              Yazıcı:
+            </strong>
+
+            ${esc(
+              p?.name ||
+              "Silinmiş yazıcı"
+            )}
+          </p>
+
+          <p>
+            <strong>
+              Başlangıç:
+            </strong>
+
+            ${fmtDT(j.start)}
+          </p>
+
+          <p>
+            <strong>
+              Bitiş:
+            </strong>
+
+            ${fmtDT(j.end)}
+          </p>
+
+          <p>
+            <strong>
+              Toplam baskı süresi:
+            </strong>
+
+            ${formatDuration(
+              j.end-j.start
+            )}
+          </p>
+
+          ${progressHTML}
+
+          <p>
+            <strong>
+              Durum:
+            </strong>
+
+            ${
+              state==="running"
+              ?
+              "Baskıda"
+              :
+              state==="completed"
+              ?
+              "Tamamlandı"
+              :
+              "Planlandı"
+            }
+
+          </p>
+
+          <p>
+            ${esc(
+              j.note ||
+              "Not yok"
+            )}
+          </p>
+
+          <div class="card-actions">
+
+            <button
+              class="small"
+              data-edit-job="${j.id}">
+              Düzenle
+            </button>
+
+          </div>
+
+        `;
+
+      }
+
+
+      grid.appendChild(
+        card
+      );
+
+    }
+  );
+
+
+  content.appendChild(
+    grid
+  );
+
+}
+
+
+/* =========================
+   MODAL
+========================= */
+
+function showModal(
+  title,
+  html
+){
+
+  $("modalTitle").textContent=
+    title;
+
+  $("modalContent").innerHTML=
+    html;
+
+  $("modalBackdrop")
+    .classList.add(
+      "open"
+    );
+
+}
+
+
+function closeModal(){
+
+  $("modalBackdrop")
+    .classList.remove(
+      "open"
+    );
+
+}
+
+
+$("closeModal").onclick=
+  closeModal;
+
+
+$("modalBackdrop")
+  .addEventListener(
+    "click",
+    e=>{
+
+      if(
+        e.target===
+        $("modalBackdrop")
+      )
+        closeModal();
+
+    }
+  );
+
+
+function durationParts(ms){
+
+  const total=
+    Math.round(
+      ms/60000
+    );
+
+  return {
+
+    hours:
+      Math.floor(
+        total/60
+      ),
+
+    minutes:
+      total%60
+
+  };
+
+}
+
+
+/* =========================
+   İŞ EKLE / DÜZENLE
+========================= */
+
+function openJobModal(
+  jobId=null,
+  defaults={}
+){
+
+  const j=
+    jobId
+    ?
+    jobById(jobId)
+    :
+    null;
+
+
+  editingJobId=
+    jobId;
+
+
+  selectedCell=
+    defaults;
+
+
+  const start=
+    j
+    ?
+    j.start
+    :
+    (
+      defaults.start ||
+      new Date()
+    );
+
+
+  const duration=
+    durationParts(
+      j
+      ?
+      j.end-j.start
+      :
+      4*HOUR
+    );
+
+
+  const printerId=
+    j
+    ?
+    j.printerId
+    :
+    (
+      defaults.printerId ||
+      printers[0]?.id
+    );
+
+
+  const options=
+    printers
+      .map(
+        p=>`
+
+          <option
+            value="${p.id}"
+            ${
+              p.id===printerId
+              ?
+              "selected"
+              :
+              ""
+            }>
+
+            ${esc(p.name)}
+
+          </option>
+
+        `
+      )
+      .join("");
+
+
+  showModal(
+    j
+    ?
+    "İşi Düzenle"
+    :
+    "Takvime İş Ekle",
+
+    `
+
+    <form id="jobForm">
+
+      <div class="form-grid">
+
+        <div class="field full">
+
+          <label for="jobName">
+            İş / Ürün adı
+          </label>
+
+          <input
+            id="jobName"
+            required
+            maxlength="100"
+            value="${esc(j?.name||"")}"
+            placeholder="Örn. Ürün A - Parti 01">
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="jobPrinter">
+            Yazıcı
+          </label>
+
+          <select
+            id="jobPrinter"
+            required>
+
+            ${options}
+
+          </select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="jobStart">
+            Başlangıç
+          </label>
+
+          <input
+            id="jobStart"
+            type="datetime-local"
+            required
+            value="${toInput(start)}">
+
+        </div>
+
+
+        <div class="field full">
+
+          <label>
+            Baskı süresi
+          </label>
+
+
+          <div class="duration-fields">
+
+            <div class="field">
+
+              <label for="durationHours">
+                Saat
+              </label>
+
+              <input
+                id="durationHours"
+                type="number"
+                min="0"
+                max="9999"
+                step="1"
+                value="${duration.hours}"
+                required>
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="durationMinutes">
+                Dakika
+              </label>
+
+              <select id="durationMinutes">
+
+                ${
+                  [
+                    0,5,10,15,20,25,
+                    30,35,40,45,50,55
+                  ]
+                  .map(
+                    m=>`
+
+                      <option
+                        value="${m}"
+                        ${
+                          m===
+                          duration.minutes
+                          ?
+                          "selected"
+                          :
+                          ""
+                        }>
+
+                        ${m} dakika
+
+                      </option>
+
+                    `
+                  )
+                  .join("")
+                }
+
+              </select>
+
+            </div>
+
+          </div>
+
+
+          <div
+            class="notice"
+            id="calculatedEnd">
+          </div>
+
+        </div>
+
+
+        <div class="field full">
+
+          <label for="jobNote">
+            Not
+          </label>
+
+          <textarea
+            id="jobNote"
+            placeholder="İşle ilgili notlar...">${esc(
+              j?.note||""
+            )}</textarea>
+
+        </div>
+
+      </div>
+
+
+      <p class="notice">
+
+        Bitiş zamanı otomatik hesaplanır.
+        Aynı yazıcıda çakışan işler kaydedilmez.
+
+      </p>
+
+
+      <div class="modal-footer">
+
+        ${
+          j
+          ?
+          `
+          <button
+            type="button"
+            class="danger"
+            id="deleteJobBtn">
+            İşi Sil
+          </button>
+          `
+          :
+          ""
+        }
+
+
+        <button
+          type="button"
+          id="cancelJobBtn">
+          İptal
+        </button>
+
+
+        <button
+          class="primary"
+          type="submit">
+          Kaydet
+        </button>
+
+      </div>
+
+    </form>
+
+    `
+  );
+
+
+  const updateEnd=()=>{
+
+    const s=
+      fromInput(
+        $("jobStart").value
+      );
+
+
+    const total=
+      Number(
+        $("durationHours").value||0
+      )*
+      60
+      +
+      Number(
+        $("durationMinutes").value||0
+      );
+
+
+    $("calculatedEnd")
+      .textContent=
+      total>0 &&
+      !isNaN(
+        s.getTime()
+      )
+
+      ?
+
+      "Otomatik bitiş: "+
+      fmtDT(
+        new Date(
+          s.getTime()+
+          total*60000
+        )
+      )
+
+      :
+
+      "Baskı süresini gir.";
+
+  };
+
+
+  [
+    "jobStart",
+    "durationHours",
+    "durationMinutes"
+  ]
+  .forEach(
+    id=>{
+
+      $(id)
+        .addEventListener(
+          "input",
+          updateEnd
+        );
+
+      $(id)
+        .addEventListener(
+          "change",
+          updateEnd
+        );
+
+    }
+  );
+
+
+  updateEnd();
+
+
+  $("jobForm").onsubmit=
+    saveJob;
+
+
+  $("cancelJobBtn").onclick=
+    closeModal;
+
+
+  if(j){
+
+    $("deleteJobBtn")
+      .onclick=()=>{
+
+        const index=
+          jobs.findIndex(
+            x=>x.id===j.id
+          );
+
+
+        if(index>=0)
+          jobs.splice(
+            index,
+            1
+          );
+
+
+        closeModal();
+
+        refreshAll();
+
+      };
+
+  }
+
+}
+
+
+/* =========================
+   İŞ KAYDET
+========================= */
+
+function saveJob(e){
+
+  e.preventDefault();
+
+
+  const name=
+    $("jobName")
+      .value
+      .trim();
+
+
+  const printerId=
+    $("jobPrinter").value;
+
+
+  const start=
+    fromInput(
+      $("jobStart").value
+    );
+
+
+  const hours=
+    Number(
+      $("durationHours").value
+    );
+
+
+  const minutes=
+    Number(
+      $("durationMinutes").value
+    );
+
+
+  const note=
+    $("jobNote")
+      .value
+      .trim();
+
+
+  const total=
+    hours*60+
+    minutes;
+
+
+  if(!name)
+    return alert(
+      "Lütfen iş adını gir."
+    );
+
+
+  if(
+    isNaN(
+      start.getTime()
+    )
+  )
+    return alert(
+      "Geçerli bir başlangıç zamanı gir."
+    );
+
+
+  if(
+    !Number.isFinite(total) ||
+    total<=0
+  )
+    return alert(
+      "Baskı süresi sıfırdan büyük olmalıdır."
+    );
+
+
+  const end=
+    new Date(
+      start.getTime()+
+      total*60000
+    );
+
+
+  const problem=
+    conflict(
+      printerId,
+      start,
+      end,
+      editingJobId
+    );
+
+
+  if(problem)
+    return alert(
+      problem
+    );
+
+
+  if(editingJobId){
+
+    Object.assign(
+      jobById(
+        editingJobId
+      ),
+      {
+        name,
+        printerId,
+        start,
+        end,
+        note
+      }
+    );
+
+  }
+  else{
+
+    jobs.push({
+
+      id:
+        "j"+
+        nextId++,
+
+      name,
+      printerId,
+      start,
+      end,
+      note
+
+    });
+
+  }
+
+
+  closeModal();
+
+  refreshAll();
+
+}
+
+
+/* =========================
+   YAZICI EKLE
+========================= */
+
+function openAddPrinter(){
+
+  showModal(
+    "Yeni Yazıcı Ekle",
+
+    `
+
+    <form id="printerForm">
+
+      <div class="field">
+
+        <label for="newPrinterName">
+          Yazıcı adı
+        </label>
+
+        <input
+          id="newPrinterName"
+          required>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          id="cancelPrinter">
+          İptal
+        </button>
+
+        <button
+          class="primary"
+          type="submit">
+          Ekle
+        </button>
+
+      </div>
+
+    </form>
+
+    `
+  );
+
+
+  $("cancelPrinter").onclick=
+    closeModal;
+
+
+  $("printerForm").onsubmit=
+    e=>{
+
+      e.preventDefault();
+
+
+      const name=
+        $("newPrinterName")
+          .value
+          .trim();
+
+
+      if(!name)
+        return;
+
+
+      printers.push({
+
+        id:
+          "p"+
+          nextId++,
+
+        name,
+
+        statuses:[]
+
+      });
+
+
+      closeModal();
+
+      refreshAll();
+
+    };
+
+}
+
+
+/* =========================
+   YAZICI ADI
+========================= */
+
+function renamePrinter(id){
+
+  const p=
+    printerById(id);
+
+
+  if(!p)
+    return;
+
+
+  showModal(
+    "Yazıcı Adını Düzenle",
+
+    `
+
+    <form id="renameForm">
+
+      <div class="field">
+
+        <label for="renameInput">
+          Yazıcı adı
+        </label>
+
+        <input
+          id="renameInput"
+          required
+          value="${esc(p.name)}">
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          id="cancelRename">
+          İptal
+        </button>
+
+        <button
+          class="primary"
+          type="submit">
+          Kaydet
+        </button>
+
+      </div>
+
+    </form>
+
+    `
+  );
+
+
+  $("cancelRename").onclick=
+    closeModal;
+
+
+  $("renameForm").onsubmit=
+    e=>{
+
+      e.preventDefault();
+
+
+      p.name=
+        $("renameInput")
+          .value
+          .trim() ||
+        p.name;
+
+
+      closeModal();
+
+      refreshAll();
+
+    };
+
+}
+
+
+/* =========================
+   BAKIM / ARIZA
+========================= */
+
+function editStatus(id){
+
+  const p=
+    printerById(id);
+
+
+  if(!p)
+    return;
+
+
+  openStatusForm(
+    p,
+    activeStatus(p)
+  );
+
+}
+
+
+function openStatusForEdit(
+  printerId,
+  statusId
+){
+
+  const p=
+    printerById(
+      printerId
+    );
+
+
+  const status=
+    p?.statuses.find(
+      x=>
+        x.id===statusId
+    );
+
+
+  if(p)
+    openStatusForm(
+      p,
+      status
+    );
+
+}
+
+
+function openStatusForm(
+  p,
+  currentStatus
+){
+
+  const now=
+    new Date();
+
+
+  showModal(
+    "Yazıcı Durumunu Güncelle",
+
+    `
+
+    <form id="statusForm">
+
+      <div class="form-grid">
+
+        <div class="field full">
+
+          <label for="statusType">
+            Durum
+          </label>
+
+          <select id="statusType">
+
+            <option value="available">
+              Müsait / Normal
+            </option>
+
+            <option value="maintenance">
+              Bakım
+            </option>
+
+            <option value="fault">
+              Arıza
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="statusStart">
+            Başlangıç
+          </label>
+
+          <input
+            id="statusStart"
+            type="datetime-local"
+            required
+            value="${toInput(
+              currentStatus?.start ||
+              now
+            )}">
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="statusEnd">
+            Bitiş (isteğe bağlı)
+          </label>
+
+          <input
+            id="statusEnd"
+            type="datetime-local"
+            value="${
+              currentStatus?.end
+              ?
+              toInput(
+                currentStatus.end
+              )
+              :
+              ""
+            }">
+
+        </div>
+
+
+        <div class="field full">
+
+          <label for="statusNote">
+            Açıklama / bakım veya arıza notu
+          </label>
+
+          <textarea
+            id="statusNote">${esc(
+              currentStatus?.note ||
+              ""
+            )}</textarea>
+
+        </div>
+
+      </div>
+
+
+      <p class="notice">
+        Bitiş boş bırakılırsa durum açık uçlu kaydedilir.
+      </p>
+
+
+      <div class="modal-footer">
+
+        ${
+          currentStatus
+          ?
+          `
+          <button
+            type="button"
+            class="danger"
+            id="deleteStatusBtn">
+            Durumu Sil
+          </button>
+          `
+          :
+          ""
+        }
+
+
+        <button
+          type="button"
+          id="cancelStatus">
+          İptal
+        </button>
+
+
+        <button
+          class="primary"
+          type="submit">
+          Kaydet
+        </button>
+
+      </div>
+
+    </form>
+
+    `
+  );
+
+
+  if(currentStatus)
+    $("statusType").value=
+      currentStatus.type;
+
+
+  $("cancelStatus").onclick=
+    closeModal;
+
+
+  if(currentStatus){
+
+    $("deleteStatusBtn")
+      .onclick=()=>{
+
+        const index=
+          p.statuses.findIndex(
+            s=>
+              s.id===
+              currentStatus.id
+          );
+
+
+        if(index>=0)
+          p.statuses.splice(
+            index,
+            1
+          );
+
+
+        closeModal();
+
+        refreshAll();
+
+      };
+
+  }
+
+
+  $("statusForm").onsubmit=
+    e=>{
+
+      e.preventDefault();
+
+
+      const type=
+        $("statusType").value;
+
+
+      const start=
+        fromInput(
+          $("statusStart").value
+        );
+
+
+      const end=
+        $("statusEnd").value
+        ?
+        fromInput(
+          $("statusEnd").value
+        )
+        :
+        null;
+
+
+      const note=
+        $("statusNote")
+          .value
+          .trim();
+
+
+      if(
+        isNaN(
+          start.getTime()
+        ) ||
+        (
+          end &&
+          (
+            isNaN(
+              end.getTime()
+            ) ||
+            end<=start
+          )
+        )
+      ){
+
+        return alert(
+          "Başlangıç ve bitiş saatlerini kontrol et."
+        );
+
+      }
+
+
+      if(currentStatus){
+
+        const index=
+          p.statuses.findIndex(
+            s=>
+              s.id===
+              currentStatus.id
+          );
+
+
+        if(index>=0)
+          p.statuses.splice(
+            index,
+            1
+          );
+
+      }
+
+
+      if(
+        type!=="available"
+      ){
+
+        const newEnd=
+          end ||
+          new Date(
+            "2999-12-31"
+          );
+
+
+        p.statuses.forEach(
+          s=>{
+
+            const oldEnd=
+              s.end ||
+              new Date(
+                "2999-12-31"
+              );
+
+
+            if(
+              overlap(
+                start,
+                newEnd,
+                s.start,
+                oldEnd
+              )
+            ){
+
+              if(
+                s.start<start
+              )
+                s.end=start;
+
+              else
+                s.end=
+                  s.start;
+
+            }
+
+          }
+        );
+
+
+        p.statuses=
+          p.statuses.filter(
+            s=>
+              s.end===null ||
+              s.end>s.start
+          );
+
+
+        p.statuses.push({
+
+          id:
+            currentStatus?.id ||
+            "st"+
+            nextId++,
+
+          type,
+
+          start,
+
+          end,
+
+          note
+
+        });
+
+      }
+
+
+      closeModal();
+
+      refreshAll();
+
+    };
+
+}
+
+
+/* =========================
+   ANA SEKME
+========================= */
+
+document
+  .querySelectorAll(
+    "[data-view]"
+  )
+  .forEach(
+    button=>{
+
+      button.onclick=()=>{
+
+        activeView=
+          button.dataset.view;
+
+
+        document
+          .querySelectorAll(
+            "[data-view]"
+          )
+          .forEach(
+            b=>{
+              b.classList.toggle(
+                "active",
+                b===button
+              );
+            }
+          );
+
+
+        $("calendarView")
+          .classList.toggle(
+            "hidden",
+            activeView!=="calendar"
+          );
+
+
+        $("dashboardView")
+          .classList.toggle(
+            "hidden",
+            activeView!=="dashboard"
+          );
+
+
+        if(
+          activeView===
+          "calendar"
+        ){
+
+          renderCalendar();
+
+        }
+        else{
+
+          renderDashboard();
+
+        }
+
+      };
+
+    }
+  );
+
+
+/* =========================
+   DASHBOARD ALT SEKME
+========================= */
+
+document
+  .querySelectorAll(
+    "[data-dash]"
+  )
+  .forEach(
+    button=>{
+
+      button.onclick=()=>{
+
+        activeDashboardTab=
+          button.dataset.dash;
+
+        renderDashboard();
+
+      };
+
+    }
+  );
+
+
+/* =========================
+   BUTONLAR
+========================= */
+
+document.addEventListener(
+  "click",
+  e=>{
+
+    const target=
+      e.target.closest(
+        "button"
+      );
+
+
+    if(!target)
+      return;
+
+
+    if(
+      target.dataset.editName
+    )
+      renamePrinter(
+        target.dataset.editName
+      );
+
+
+    if(
+      target.dataset.editStatus
+    )
+      editStatus(
+        target.dataset.editStatus
+      );
+
+
+    if(
+      target.dataset.editJob
+    )
+      openJobModal(
+        target.dataset.editJob
+      );
+
+  }
+);
+
+
+$("addJobBtn").onclick=
+  ()=>
+    openJobModal();
+
+
+$("addPrinterDashboard").onclick=
+  openAddPrinter;
+
+
+/* =========================
+   REFRESH
+========================= */
+
+function refreshAll(){
+
+  renderCalendar();
+
+  renderDashboard();
+
+}
+
+
+/* =========================
+   TAKVİM YATAY SCROLL
+========================= */
+
+const calendarViewport=
+  $("calendarViewport");
+
+
+calendarViewport.addEventListener(
+  "wheel",
+  event=>{
+
+    if(
+      Math.abs(
+        event.deltaY
+      ) >=
+      Math.abs(
+        event.deltaX
+      )
+    ){
+
+      event.preventDefault();
+
+      calendarViewport.scrollLeft+=
+        event.deltaY;
+
+    }
+    else{
+
+      event.preventDefault();
+
+      calendarViewport.scrollLeft+=
+        event.deltaX;
+
+    }
+
+  },
+  {
+    passive:false
+  }
+);
+
+
+/* =========================
+   İLK AÇILIŞ
+========================= */
+
+renderCalendar();
+
+renderDashboard();
+
+
+/* =========================
+   CANLI GÜNCELLEME
+========================= */
+
+setInterval(
+  ()=>{
+
+    if(
+      activeView===
+      "calendar"
+    )
+      renderCalendar();
+
+
+    if(
+      activeView===
+      "dashboard"
+    )
+      renderDashboard();
+
+  },
+  15000
+);
+
 </script>
+
 </body>
 </html>
