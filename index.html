@@ -5,501 +5,142 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>R4310 - PRINTFLOW 3D</title>
-
 <style>
 :root {
-  --bg: #11151b;
-  --panel: #1b222c;
-  --panel2: #202a36;
-  --border: #35404d;
-  --text: #e9eef5;
-  --muted: #a3afbd;
-  --green: #39d98a;
-  --blue: #3984ed;
-  --red: #f05c64;
-  --orange: #efa83d;
-  --cell-width: 64px;
-  --name-width: 190px;
-  --row-height: 76px;
+  --bg:#11151b; --panel:#1b222c; --border:#35404d;
+  --text:#e9eef5; --muted:#a3afbd; --green:#39d98a;
+  --cell-width:64px; --name-width:190px; --row-height:76px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;border:1px solid var(--border);color:var(--text);background:#27313e;padding:9px 13px;border-radius:7px}
+button:hover{background:#354252}
+button.primary{background:#286d50;border-color:#398e69}
+button.danger{background:#692f36}
+button.small{padding:5px 9px;font-size:12px}
+header{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px 24px 12px;border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-mark{width:42px;height:42px;border:2px solid var(--green);border-radius:10px;display:grid;place-items:center;color:var(--green);font-weight:800}
+.brand h1{margin:0;font-size:21px}
+.brand p{margin:5px 0 0;color:var(--muted);font-size:12px;letter-spacing:1.5px}
+.clock{text-align:right;line-height:1.6;color:var(--muted);font-size:13px}
+.clock strong{display:block;color:var(--text);font-size:18px;font-weight:600}
+main{padding:16px 20px 30px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.tabs,.toolbar-group,.legend,.subtabs,.card-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tab{background:transparent;color:var(--muted);border-color:transparent}
+.tab.active{background:#26323e;color:white;border-color:#485565;box-shadow:inset 0 -2px var(--green)}
+.section-title{margin:0 0 5px;font-size:20px}
+.section-subtitle{color:var(--muted);font-size:13px;margin-bottom:16px}
+.panel,.stat-card,.printer-card,.job-card{background:var(--panel);border:1px solid var(--border);border-radius:11px;padding:15px;margin-bottom:16px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.toolbar-label,.field label{color:var(--muted);font-size:12px}
+.legend{color:var(--muted);font-size:12px}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+.calendar-viewport{position:relative;overflow:auto;max-height:72vh;border:1px solid var(--border);border-radius:8px;background:#151b23;isolation:isolate}
+.calendar{position:relative;min-width:max-content}
+.calendar-header{display:flex;position:sticky;top:0;z-index:10;background:#202a35;border-bottom:1px solid #46515e}
+.printer-heading{width:var(--name-width);min-width:var(--name-width);padding:12px;display:flex;align-items:center;font-size:12px;font-weight:bold;background:#202a35;border-right:1px solid var(--border);position:sticky;left:0;z-index:12}
+.timeline-heading{display:flex;flex-direction:column}
+.day-row,.hour-row{display:flex}
+.day-row{height:38px;border-bottom:1px solid #3b4653}
+.day-heading{flex:0 0 calc(var(--cell-width)*24);width:calc(var(--cell-width)*24);display:flex;justify-content:center;align-items:center;text-align:center;white-space:nowrap;font-size:12px;font-weight:bold;color:#e4ebf4;border-right:1px solid #56616e}
+.hour-row{height:34px}
+.hour-heading{flex:0 0 var(--cell-width);width:var(--cell-width);display:flex;align-items:center;justify-content:center;color:#aeb9c7;font-size:11px;border-right:1px solid #35404c}
+.printer-row{display:flex;height:var(--row-height);border-bottom:1px solid #35404c;position:relative}
+.printer-name{width:var(--name-width);min-width:var(--name-width);position:sticky;left:0;z-index:5;background:#1b222c;border-right:1px solid var(--border);padding:11px 12px;display:flex;flex-direction:column;justify-content:center;gap:5px}
+.printer-name strong{font-size:13px}
+.printer-name small{color:var(--muted);font-size:11px}
+.printer-timeline{position:relative;display:flex;height:100%}
+.calendar-cell{flex:0 0 var(--cell-width);width:var(--cell-width);height:100%;border-right:1px solid #2d3742;background:#171e27;cursor:pointer;position:relative}
+.calendar-cell:nth-child(24n + 1){border-left:1px solid #4a5663}
+.calendar-cell:hover{background:#263641}
+.calendar-cell.off-hours{background:#141a22}
+.calendar-cell.weekend{background:#1d222b}
+.calendar-cell.off-hours.weekend{background:#191e26}
+.job{position:absolute;top:8px;height:calc(var(--row-height) - 16px);min-width:8px;z-index:3;border-radius:5px;padding:7px 8px;overflow:hidden;cursor:pointer;border:1px solid rgba(255,255,255,.22);color:white}
+.job.pending{background:#315f9b}
+.job.running{background:#28764f}
+.job.completed{background:rgba(112,124,137,.30);border-color:rgba(200,210,220,.18);color:rgba(240,245,250,.65)}
+.job strong{display:block;font-size:11px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.job small{display:block;margin-top:5px;font-size:10px;color:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Baskı ilerleme animasyonu: ışık soldan sağa hareket eder. */
+.job.running::after{
+  content:"";position:absolute;inset:0 auto 0 -45%;
+  width:40%;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.27),transparent);
+  animation:printSweep 2.2s linear infinite;
+}
+@keyframes printSweep{
+  from{left:-45%}
+  to{left:110%}
 }
 
-* { box-sizing: border-box; }
+/* Yüzde ve iş adı her yazıcı satırının dikey ortasında. */
+.job-progress,.job-label{
+  position:absolute;top:50%;transform:translateY(-50%);
+  z-index:7;font-size:10px;white-space:nowrap;
+  pointer-events:none;border-radius:4px;padding:5px 7px;
+}
+.job-progress{font-weight:bold;color:white;background:#174d35;border:1px solid #5ce6a0}
+.job-label{color:white;background:#1b583c}
 
-body {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-}
-
-button, input, select, textarea { font: inherit; }
-
-button {
-  cursor: pointer;
-  border: 1px solid var(--border);
-  color: var(--text);
-  background: #27313e;
-  padding: 9px 13px;
-  border-radius: 7px;
-}
-button:hover { background: #354252; }
-button.primary { background: #286d50; border-color: #398e69; }
-button.danger { background: #692f36; border-color: #98414b; }
-button.small { padding: 5px 9px; font-size: 12px; }
-
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  padding: 20px 24px 12px;
-  border-bottom: 1px solid var(--border);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.brand-mark {
-  width: 42px;
-  height: 42px;
-  border: 2px solid var(--green);
-  border-radius: 10px;
-  display: grid;
-  place-items: center;
-  color: var(--green);
-  font-weight: 800;
-  font-size: 17px;
-}
-
-.brand h1 {
-  margin: 0;
-  font-size: 21px;
-  letter-spacing: .5px;
-}
-
-.brand p {
-  margin: 5px 0 0;
-  color: var(--muted);
-  font-size: 12px;
-  letter-spacing: 1.5px;
-}
-
-.clock {
-  text-align: right;
-  line-height: 1.6;
-  white-space: nowrap;
-  color: var(--muted);
-  font-size: 13px;
-}
-.clock strong {
-  display: block;
-  color: var(--text);
-  font-size: 18px;
-  font-weight: 600;
-}
-
-main { padding: 16px 20px 30px; }
-
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-}
-
-.tabs {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.tab {
-  padding: 10px 17px;
-  background: transparent;
-  color: var(--muted);
-  border-color: transparent;
-  border-radius: 7px;
-}
-.tab.active {
-  background: #26323e;
-  color: white;
-  border-color: #485565;
-  box-shadow: inset 0 -2px 0 var(--green);
-}
-
-.section-title {
-  margin: 0 0 5px;
-  font-size: 20px;
-}
-.section-subtitle {
-  color: var(--muted);
-  font-size: 13px;
-  margin-bottom: 16px;
-}
-
-.panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 11px;
-  padding: 15px;
-  margin-bottom: 16px;
-}
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-.toolbar-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.toolbar-label { color: var(--muted); font-size: 12px; }
-.legend { display: flex; gap: 13px; flex-wrap: wrap; color: var(--muted); font-size: 12px; }
-.legend span { display: inline-flex; gap: 6px; align-items: center; }
-.dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
-
-.calendar-viewport {
-  position: relative;
-  overflow: auto;
-  max-height: 72vh;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: #151b23;
-  isolation: isolate;
-}
-
-.calendar {
-  position: relative;
-  min-width: max-content;
-}
-
-.calendar-header {
-  display: flex;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: #202a35;
-  border-bottom: 1px solid #46515e;
-}
-
-.printer-heading {
-  width: var(--name-width);
-  min-width: var(--name-width);
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  font-size: 12px;
-  font-weight: bold;
-  color: #dce5ef;
-  background: #202a35;
-  border-right: 1px solid var(--border);
-  position: sticky;
-  left: 0;
-  z-index: 12;
-}
-
-.timeline-heading { display: flex; flex-direction: column; }
-
-.day-row {
-  display: flex;
-  height: 38px;
-  border-bottom: 1px solid #3b4653;
-}
-
-.day-heading {
-  flex: 0 0 calc(var(--cell-width) * 24);
-  width: calc(var(--cell-width) * 24);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  white-space: nowrap;
-  font-size: 12px;
-  font-weight: 700;
-  color: #e4ebf4;
-  border-right: 1px solid #56616e;
-  overflow: visible;
-}
-
-.hour-row { display: flex; height: 34px; }
-
-.hour-heading {
-  flex: 0 0 var(--cell-width);
-  width: var(--cell-width);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #aeb9c7;
-  font-size: 11px;
-  border-right: 1px solid #35404c;
-}
-
-.printer-row {
-  display: flex;
-  height: var(--row-height);
-  border-bottom: 1px solid #35404c;
-  position: relative;
-}
-
-.printer-name {
-  width: var(--name-width);
-  min-width: var(--name-width);
-  position: sticky;
-  left: 0;
-  z-index: 5;
-  background: #1b222c;
-  border-right: 1px solid var(--border);
-  padding: 11px 12px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 5px;
-}
-
-.printer-name strong { font-size: 13px; }
-.printer-name small { color: var(--muted); font-size: 11px; }
-
-.printer-timeline {
-  position: relative;
-  display: flex;
-  height: 100%;
-}
-
-.calendar-cell {
-  flex: 0 0 var(--cell-width);
-  width: var(--cell-width);
-  height: 100%;
-  border-right: 1px solid #2d3742;
-  background: #171e27;
-  cursor: pointer;
-  position: relative;
-}
-.calendar-cell:nth-child(24n + 1) { border-left: 1px solid #4a5663; }
-.calendar-cell:hover { background: #263641; }
-.calendar-cell.off-hours { background: #141a22; }
-.calendar-cell.weekend { background: #1d222b; }
-.calendar-cell.off-hours.weekend { background: #191e26; }
-
-.job {
-  position: absolute;
-  top: 8px;
-  height: calc(var(--row-height) - 16px);
-  min-width: 8px;
-  z-index: 3;
-  border-radius: 5px;
-  padding: 7px 8px;
-  overflow: hidden;
-  cursor: pointer;
-  border: 1px solid rgba(255,255,255,.22);
-  box-shadow: 0 2px 5px rgba(0,0,0,.25);
-  color: #fff;
-}
-.job.pending { background: #315f9b; }
-.job.running { background: #28764f; }
-.job.completed { background: #4b5664; }
-.job strong {
-  display: block;
-  font-size: 11px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.job small {
-  display: block;
-  margin-top: 5px;
-  font-size: 10px;
-  color: #edf2f7;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.job-progress {
-  position: absolute;
-  top: 1px;
-  z-index: 6;
-  font-size: 10px;
-  font-weight: bold;
-  color: #fff;
-  background: #246343;
-  border: 1px solid #5ce6a0;
-  padding: 4px 6px;
-  border-radius: 4px;
-  white-space: nowrap;
-  pointer-events: none;
-}
-.job-label {
-  position: absolute;
-  top: 24px;
-  z-index: 6;
-  font-size: 10px;
-  color: #fff;
-  background: #1b583c;
-  padding: 4px 6px;
-  border-radius: 4px;
-  white-space: nowrap;
-  pointer-events: none;
-}
-
-.global-now-line {
-  position: absolute;
-  width: 3px;
-  background: #39ff9a;
-  z-index: 8;
-  pointer-events: none;
-  box-shadow: 0 0 5px #39ff9a, 0 0 12px rgba(57,255,154,.6);
-  animation: lineBlink 1.15s infinite;
-}
-@keyframes lineBlink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: .25; }
-}
-.now-cap {
-  position: absolute;
-  z-index: 9;
-  width: 9px;
-  height: 9px;
-  background: #39ff9a;
-  border-radius: 50%;
-  transform: translate(-3px,-3px);
-  box-shadow: 0 0 7px #39ff9a;
-  animation: lineBlink 1.15s infinite;
-  pointer-events: none;
-}
-
-.empty-state {
-  color: var(--muted);
-  text-align: center;
-  padding: 25px;
-  font-size: 13px;
-}
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(150px, 1fr));
-  gap: 12px;
-  margin-bottom: 16px;
-}
-.stat-card {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px;
-}
-.stat-card span { display: block; color: var(--muted); font-size: 12px; }
-.stat-card strong { display: block; font-size: 28px; margin-top: 8px; }
-
-.subtabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
-.subtab {
-  background: #1c242e;
-  color: var(--muted);
-  border: 1px solid var(--border);
-}
-.subtab.active { color: white; border-color: #667586; background: #303c4a; }
-
-.printer-grid, .job-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 12px;
-}
-.printer-card, .job-card {
-  background: #1b222c;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 15px;
-}
-.printer-card h3, .job-card h3 { margin: 0 0 8px; font-size: 15px; }
-.printer-card p, .job-card p { margin: 7px 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
-.card-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 13px; }
-.status-pill {
-  display: inline-block;
-  padding: 4px 7px;
-  border-radius: 5px;
-  font-size: 10px;
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-.status-pill.available { background: #293c34; color: #7ce5ae; }
-.status-pill.printing { background: #254d3b; color: #7ce5ae; }
-.status-pill.maintenance { background: #4d4028; color: #ffd17b; }
-.status-pill.fault { background: #4d2b31; color: #ff9ba1; }
-
-.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.field { display: flex; flex-direction: column; gap: 6px; }
-.field.full { grid-column: 1 / -1; }
-.field label { color: var(--muted); font-size: 12px; }
-.field input, .field select, .field textarea {
-  width: 100%;
-  padding: 10px;
-  color: var(--text);
-  background: #121821;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-}
-.field textarea { resize: vertical; min-height: 75px; }
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.7);
-  z-index: 100;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-}
-.modal-backdrop.open { display: flex; }
-.modal {
-  width: min(620px, 100%);
-  max-height: 90vh;
-  overflow: auto;
-  background: #1b222c;
-  border: 1px solid #4a5665;
-  border-radius: 12px;
-  padding: 20px;
-}
-.modal-header { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 16px; }
-.modal-header h2 { margin: 0; font-size: 18px; }
-.modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
-.hidden { display: none !important; }
-.notice { color: var(--muted); font-size: 12px; line-height: 1.5; margin-top: 10px; }
-
-@media (max-width: 720px) {
-  header { padding: 15px; align-items: flex-start; }
-  .brand h1 { font-size: 16px; }
-  .brand p { font-size: 10px; }
-  .brand-mark { width: 36px; height: 36px; }
-  .clock strong { font-size: 14px; }
-  main { padding: 12px; }
-  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .form-grid { grid-template-columns: 1fr; }
-  .field.full { grid-column: auto; }
+/* Tamamlanmış işin yüzde etiketi soluk görünür. */
+.job-progress.completed-progress{background:rgba(80,91,103,.55);border-color:rgba(220,230,240,.25);color:rgba(255,255,255,.65)}
+.global-now-line{position:absolute;width:3px;background:#39ff9a;z-index:8;pointer-events:none;box-shadow:0 0 5px #39ff9a,0 0 12px rgba(57,255,154,.6);animation:lineBlink 1.15s infinite}
+.now-cap{position:absolute;z-index:9;width:9px;height:9px;background:#39ff9a;border-radius:50%;transform:translate(-3px,-3px);box-shadow:0 0 7px #39ff9a;animation:lineBlink 1.15s infinite;pointer-events:none}
+@keyframes lineBlink{0%,100%{opacity:1}50%{opacity:.25}}
+.empty-state{color:var(--muted);text-align:center;padding:25px;font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.stat-card span{display:block;color:var(--muted);font-size:12px}
+.stat-card strong{display:block;font-size:28px;margin-top:8px}
+.subtab{background:#1c242e;color:var(--muted);border:1px solid var(--border)}
+.subtab.active{color:white;border-color:#667586;background:#303c4a}
+.printer-grid,.job-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.printer-card,.job-card{margin:0}
+.printer-card h3,.job-card h3{margin:0 0 8px;font-size:15px}
+.printer-card p,.job-card p{margin:7px 0;color:var(--muted);font-size:12px;line-height:1.5}
+.status-pill{display:inline-block;padding:4px 7px;border-radius:5px;font-size:10px;font-weight:bold;margin-bottom:8px}
+.status-pill.available{background:#293c34;color:#7ce5ae}
+.status-pill.printing{background:#254d3b;color:#7ce5ae}
+.status-pill.maintenance{background:#4d4028;color:#ffd17b}
+.status-pill.fault{background:#4d2b31;color:#ff9ba1}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field input,.field select,.field textarea{width:100%;padding:10px;color:var(--text);background:#121821;border:1px solid var(--border);border-radius:6px}
+.field textarea{resize:vertical;min-height:75px}
+.duration-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-backdrop.open{display:flex}
+.modal{width:min(620px,100%);max-height:90vh;overflow:auto;background:#1b222c;border:1px solid #4a5665;border-radius:12px;padding:20px}
+.modal-header{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:16px}
+.modal-header h2{margin:0;font-size:18px}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;flex-wrap:wrap}
+.hidden{display:none!important}
+.notice{color:var(--muted);font-size:12px;line-height:1.5;margin-top:10px}
+@media(max-width:720px){
+ header{padding:15px;align-items:flex-start}
+ .brand h1{font-size:16px}.brand p{font-size:10px}.brand-mark{width:36px;height:36px}
+ .clock strong{font-size:14px}main{padding:12px}
+ .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}
 }
 </style>
 </head>
-
 <body>
 <header>
   <div class="brand">
     <div class="brand-mark">3D</div>
-    <div>
-      <h1>R4310 - PRINTFLOW 3D</h1>
-      <p>ÜRETİM PLANLAMA VE TAKİP SİSTEMİ</p>
-    </div>
+    <div><h1>R4310 - PRINTFLOW 3D</h1><p>ÜRETİM PLANLAMA VE TAKİP SİSTEMİ</p></div>
   </div>
-  <div class="clock">
-    <div id="liveDate">Tarih yükleniyor...</div>
-    <strong id="liveTime">--:--:--</strong>
-  </div>
+  <div class="clock"><div id="liveDate">Tarih yükleniyor...</div><strong id="liveTime">--:--:--</strong></div>
 </header>
 
 <main>
-  <!-- Sekmeler marka başlığının altında, takvimin üstünde -->
   <div class="topbar">
     <nav class="tabs">
       <button class="tab active" data-view="calendar">Üretim Takvimi</button>
@@ -507,47 +148,37 @@ main { padding: 16px 20px 30px; }
     </nav>
     <div class="toolbar-group">
       <span class="toolbar-label">Takvim yakınlaştırma</span>
-      <button id="zoomOut" aria-label="Uzaklaştır">−</button>
-      <button id="zoomIn" aria-label="Yakınlaştır">+</button>
+      <button id="zoomOut">−</button><button id="zoomIn">+</button>
     </div>
   </div>
 
   <section id="calendarView">
     <h2 class="section-title">Üretim Takvimi</h2>
-    <div class="section-subtitle">Bir yazıcı satırındaki saat hücresine tıklayarak yeni üretim işi ekleyebilirsin.</div>
-
+    <div class="section-subtitle">Bir yazıcı satırındaki saat hücresine tıklayarak yeni iş ekleyebilirsin.</div>
     <div class="panel">
       <div class="toolbar">
-        <div class="toolbar-group">
-          <button class="primary" id="addJobBtn">+ İş Ekle</button>
-          <button id="addPrinterBtn">+ Yazıcı Ekle</button>
-        </div>
+        <div class="toolbar-group"><button class="primary" id="addJobBtn">+ İş Ekle</button><button id="addPrinterBtn">+ Yazıcı Ekle</button></div>
         <div class="legend">
           <span><i class="dot" style="background:#315f9b"></i>Planlandı</span>
           <span><i class="dot" style="background:#28764f"></i>Baskıda</span>
-          <span><i class="dot" style="background:#4b5664"></i>Tamamlandı</span>
+          <span><i class="dot" style="background:#7c8793"></i>Tamamlandı (%100)</span>
           <span><i class="dot" style="background:#39ff9a"></i>Şimdiki zaman</span>
         </div>
       </div>
-
-      <div class="calendar-viewport" id="calendarViewport">
-        <div class="calendar" id="calendar"></div>
-      </div>
-      <div class="notice">Çalışma saatleri 08:00–16:00 olarak gösterilir. Mavi işler planlanan, yeşil işler baskıdaki, gri işler tamamlanan işleri belirtir. Saat hücrelerine veya mevcut işlere tıklayabilirsin.</div>
+      <div class="calendar-viewport" id="calendarViewport"><div class="calendar" id="calendar"></div></div>
+      <div class="notice">İşin bitiş zamanı, başlangıç saati ve baskı süresinden otomatik hesaplanır. Saat hücresine veya mevcut işe tıklayabilirsin.</div>
     </div>
   </section>
 
   <section id="dashboardView" class="hidden">
     <h2 class="section-title">Dashboard</h2>
     <div class="section-subtitle">Yazıcıların güncel durumunu ve üretim işlerini buradan yönetebilirsin.</div>
-
     <div class="stats">
       <div class="stat-card"><span>Toplam Yazıcı</span><strong id="statPrinters">0</strong></div>
       <div class="stat-card"><span>Baskıda</span><strong id="statPrinting">0</strong></div>
       <div class="stat-card"><span>Bakım / Arıza</span><strong id="statUnavailable">0</strong></div>
       <div class="stat-card"><span>Planlanan İş</span><strong id="statPending">0</strong></div>
     </div>
-
     <div class="panel">
       <div class="subtabs">
         <button class="subtab active" data-dash="printers">Yazıcılar</button>
@@ -557,13 +188,9 @@ main { padding: 16px 20px 30px; }
       </div>
       <div id="dashboardContent"></div>
     </div>
-
     <div class="panel">
       <div class="toolbar">
-        <div>
-          <h3 style="margin:0 0 5px">İş Havuzu</h3>
-          <div class="section-subtitle" style="margin:0">Takvime henüz yerleştirilmemiş işleri burada tutabilirsin.</div>
-        </div>
+        <div><h3 style="margin:0 0 5px">İş Havuzu</h3><div class="section-subtitle" style="margin:0">Takvime henüz yerleştirilmemiş işler.</div></div>
         <button class="primary" id="addSavedJobBtn">+ İş Oluştur</button>
       </div>
       <div id="savedJobsContent"></div>
@@ -573,736 +200,316 @@ main { padding: 16px 20px 30px; }
 
 <div class="modal-backdrop" id="modalBackdrop">
   <div class="modal">
-    <div class="modal-header">
-      <h2 id="modalTitle">İş Ekle</h2>
-      <button id="closeModal" aria-label="Kapat">✕</button>
-    </div>
+    <div class="modal-header"><h2 id="modalTitle">İş Ekle</h2><button id="closeModal">✕</button></div>
     <div id="modalContent"></div>
   </div>
 </div>
 
 <script>
-const HOUR_MS = 60 * 60 * 1000;
-const DAY_MS = 24 * HOUR_MS;
+const HOUR=3600000, DAY=86400000;
+let zoom=64, activeView="calendar", activeDashboardTab="printers";
+let editingJobId=null, selectedCell=null, nextId=1, initialScrollDone=false;
 
-let zoom = 64;
-let activeView = "calendar";
-let activeDashboardTab = "printers";
-let editingJobId = null;
-let editingPrinterId = null;
-let selectedCell = null;
-let modalMode = "";
-let nextId = 1;
-
-const printers = [
-  { id: "p1", name: "R4310-01", statuses: [] },
-  { id: "p2", name: "R4310-02", statuses: [] },
-  { id: "p3", name: "R4310-03", statuses: [] },
-  { id: "p4", name: "R4310-04", statuses: [] },
-  { id: "p5", name: "R4310-05", statuses: [] }
+const printers=[
+ {id:"p1",name:"R4310-01",statuses:[]},
+ {id:"p2",name:"R4310-02",statuses:[]},
+ {id:"p3",name:"R4310-03",statuses:[]},
+ {id:"p4",name:"R4310-04",statuses:[]},
+ {id:"p5",name:"R4310-05",statuses:[]}
 ];
-
-const jobs = [];
-const savedJobs = [];
-
-const calendarStart = new Date();
+const jobs=[], savedJobs=[];
+const calendarStart=new Date();
 calendarStart.setHours(0,0,0,0);
-calendarStart.setDate(calendarStart.getDate() - 2);
+calendarStart.setDate(calendarStart.getDate()-2);
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
-const $ = (id) => document.getElementById(id);
-const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, c => ({
-  "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
-}[c]));
+function updateClock(){
+ const n=new Date();
+ $("liveDate").textContent=new Intl.DateTimeFormat("tr-TR",{weekday:"long",year:"numeric",month:"long",day:"numeric"}).format(n);
+ $("liveTime").textContent=n.toLocaleTimeString("tr-TR");
+}
+updateClock();setInterval(updateClock,1000);
+function fmtDate(d){return new Intl.DateTimeFormat("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric"}).format(d)}
+function fmtTime(d){return new Intl.DateTimeFormat("tr-TR",{hour:"2-digit",minute:"2-digit",hour12:false}).format(d)}
+function fmtDT(d){return fmtDate(d)+" "+fmtTime(d)}
+function toInput(d){return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}
+function fromInput(v){return new Date(v)}
+function printerById(id){return printers.find(p=>p.id===id)}
+function jobById(id){return jobs.find(j=>j.id===id)}
+function jobState(j,n=new Date()){return j.end<=n?"completed":j.start<=n?"running":"pending"}
+function activeStatus(p,t=new Date()){return p.statuses.find(s=>s.start<=t&&(s.end===null||s.end>t))||null}
+function overlap(a,b,c,d){return a<d&&c<b}
+function conflict(pid,start,end,exclude=null){
+ if(jobs.some(j=>j.printerId===pid&&j.id!==exclude&&overlap(start,end,j.start,j.end)))return "Bu yazıcıda seçilen saatlerde başka bir iş bulunuyor.";
+ const p=printerById(pid);
+ if(p&&p.statuses.some(s=>overlap(start,end,s.start,s.end||new Date("2999-12-31"))))return "Bu yazıcı seçilen zaman aralığında bakımda veya arızalı.";
+ return "";
+}
+function getPrinterSummary(p){const s=activeStatus(p);return !s?"Durum: Normal":s.type==="maintenance"?"Durum: Bakım":"Durum: Arıza"}
+function setZoom(v){zoom=Math.max(28,Math.min(120,v));document.documentElement.style.setProperty("--cell-width",zoom+"px");renderCalendar()}
+$("zoomIn").onclick=()=>setZoom(zoom+8);
+$("zoomOut").onclick=()=>setZoom(zoom-8);
 
-function updateClock() {
-  const now = new Date();
-  $("liveDate").textContent = new Intl.DateTimeFormat("tr-TR", {
-    weekday: "long", year: "numeric", month: "long", day: "numeric"
-  }).format(now);
-  $("liveTime").textContent = now.toLocaleTimeString("tr-TR");
-}
-updateClock();
-setInterval(updateClock, 1000);
-
-function fmtDate(date) {
-  return new Intl.DateTimeFormat("tr-TR", {
-    day: "2-digit", month: "2-digit", year: "numeric"
-  }).format(date);
-}
-function fmtTime(date) {
-  return new Intl.DateTimeFormat("tr-TR", {
-    hour: "2-digit", minute: "2-digit", hour12: false
-  }).format(date);
-}
-function fmtDateTime(date) {
-  return fmtDate(date) + " " + fmtTime(date);
-}
-function durationHours(start, end) {
-  return Math.max(0, (end - start) / HOUR_MS);
-}
-function printerById(id) {
-  return printers.find(p => p.id === id);
-}
-function jobById(id) {
-  return jobs.find(j => j.id === id);
-}
-function jobState(job, now = new Date()) {
-  if (job.end <= now) return "completed";
-  if (job.start <= now && job.end > now) return "running";
-  return "pending";
-}
-function activeStatus(printer, time = new Date()) {
-  return printer.statuses.find(s =>
-    s.start <= time && (s.end === null || s.end > time)
-  ) || null;
-}
-function overlapping(aStart, aEnd, bStart, bEnd) {
-  return aStart < bEnd && bStart < aEnd;
-}
-function jobConflict(printerId, start, end, excludeId = null) {
-  const job = jobs.find(j =>
-    j.printerId === printerId &&
-    j.id !== excludeId &&
-    overlapping(start, end, j.start, j.end)
-  );
-  if (job) return "Bu yazıcıda seçilen saatlerde başka bir iş bulunuyor.";
-
-  const printer = printerById(printerId);
-  if (printer) {
-    const status = printer.statuses.find(s =>
-      overlapping(start, end, s.start, s.end || new Date("2999-12-31"))
-    );
-    if (status) return "Bu yazıcı seçilen zaman aralığında bakımda veya arızalı.";
+function renderCalendar(){
+ const root=$("calendar");root.innerHTML="";
+ const now=new Date(),days=30,startMs=calendarStart.getTime(),endMs=startMs+days*DAY;
+ const nowVisible=now.getTime()>=startMs&&now.getTime()<endMs;
+ const header=document.createElement("div");header.className="calendar-header";
+ const ph=document.createElement("div");ph.className="printer-heading";ph.textContent="YAZICILAR";header.appendChild(ph);
+ const th=document.createElement("div");th.className="timeline-heading";
+ const dayRow=document.createElement("div");dayRow.className="day-row";
+ const hourRow=document.createElement("div");hourRow.className="hour-row";
+ for(let d=0;d<days;d++){
+  const day=new Date(startMs+d*DAY),dh=document.createElement("div");dh.className="day-heading";
+  const name=new Intl.DateTimeFormat("tr-TR",{weekday:"long"}).format(day);
+  dh.textContent=name+" · "+fmtDate(day);dh.title=name+" "+fmtDate(day);dayRow.appendChild(dh);
+  for(let h=0;h<24;h++){const hh=document.createElement("div");hh.className="hour-heading";hh.textContent=String(h).padStart(2,"0")+":00";hourRow.appendChild(hh)}
+ }
+ th.append(dayRow,hourRow);header.appendChild(th);root.appendChild(header);
+ const headerHeight=header.offsetHeight||72;
+ printers.forEach(p=>{
+  const row=document.createElement("div");row.className="printer-row";
+  const pn=document.createElement("div");pn.className="printer-name";
+  pn.innerHTML=`<strong>${esc(p.name)}</strong><small>${esc(getPrinterSummary(p))}</small>`;
+  row.appendChild(pn);
+  const timeline=document.createElement("div");timeline.className="printer-timeline";
+  for(let i=0;i<days*24;i++){
+   const date=new Date(startMs+i*HOUR),cell=document.createElement("div");cell.className="calendar-cell";
+   if(date.getHours()<8||date.getHours()>=16)cell.classList.add("off-hours");
+   if(date.getDay()===0||date.getDay()===6)cell.classList.add("weekend");
+   cell.title=`${p.name} · ${fmtDT(date)} — İş eklemek için tıkla`;
+   cell.onclick=()=>openJobModal(null,{printerId:p.id,start:date});
+   timeline.appendChild(cell);
   }
-  return "";
-}
+  jobs.filter(j=>j.printerId===p.id&&j.end>new Date(startMs)&&j.start<new Date(endMs)).forEach(j=>{
+   const s=Math.max(j.start.getTime(),startMs),e=Math.min(j.end.getTime(),endMs);
+   const left=(s-startMs)/HOUR*zoom,width=(e-s)/HOUR*zoom,state=jobState(j,now);
+   const block=document.createElement("div");block.className="job "+state;
+   block.style.left=left+"px";block.style.width=Math.max(width,8)+"px";
+   block.innerHTML=`<strong>${esc(j.name)}</strong><small>${fmtTime(j.start)}–${fmtTime(j.end)}</small>`;
+   block.title=`${j.name}\n${fmtDT(j.start)} – ${fmtDT(j.end)}\nDüzenlemek için tıkla`;
+   block.onclick=e=>{e.stopPropagation();openJobModal(j.id)};
+   timeline.appendChild(block);
 
-function setZoom(next) {
-  zoom = Math.max(28, Math.min(120, next));
-  document.documentElement.style.setProperty("--cell-width", zoom + "px");
-  renderCalendar();
-}
-$("zoomIn").addEventListener("click", () => setZoom(zoom + 8));
-$("zoomOut").addEventListener("click", () => setZoom(zoom - 8));
-
-function renderCalendar() {
-  const root = $("calendar");
-  root.innerHTML = "";
-
-  const now = new Date();
-  const days = 30;
-  const hours = days * 24;
-  const startMs = calendarStart.getTime();
-  const endMs = startMs + days * DAY_MS;
-  const nowVisible = now >= new Date(startMs) && now < new Date(endMs);
-
-  const header = document.createElement("div");
-  header.className = "calendar-header";
-
-  const printerHeading = document.createElement("div");
-  printerHeading.className = "printer-heading";
-  printerHeading.textContent = "YAZICILAR";
-  header.appendChild(printerHeading);
-
-  const timelineHeading = document.createElement("div");
-  timelineHeading.className = "timeline-heading";
-
-  const dayRow = document.createElement("div");
-  dayRow.className = "day-row";
-
-  const hourRow = document.createElement("div");
-  hourRow.className = "hour-row";
-
-  for (let d = 0; d < days; d++) {
-    const day = new Date(startMs + d * DAY_MS);
-    const dayHeading = document.createElement("div");
-    dayHeading.className = "day-heading";
-    const dayName = new Intl.DateTimeFormat("tr-TR", { weekday: "long" }).format(day);
-    dayHeading.textContent = dayName + " · " + fmtDate(day);
-    dayHeading.title = dayName + " " + fmtDate(day);
-    dayRow.appendChild(dayHeading);
-
-    for (let h = 0; h < 24; h++) {
-      const hour = document.createElement("div");
-      hour.className = "hour-heading";
-      hour.textContent = String(h).padStart(2, "0") + ":00";
-      hourRow.appendChild(hour);
+   if(state==="running"||state==="completed"){
+    const pct=state==="completed"?100:Math.max(0,Math.min(99,Math.floor((now-j.start)/(j.end-j.start)*100)));
+    const progress=document.createElement("div");
+    progress.className="job-progress"+(state==="completed"?" completed-progress":"");
+    progress.textContent=pct+"%";
+    if(state==="running"){
+     const nowX=(now.getTime()-startMs)/HOUR*zoom;
+     progress.style.left=(nowX-43)+"px";
+     progress.style.top="50%";
+     timeline.appendChild(progress);
+     const label=document.createElement("div");label.className="job-label";label.textContent=j.name;
+     label.style.left=(nowX+8)+"px";label.style.top="50%";
+     timeline.appendChild(label);
+    }else{
+     progress.style.left=(left+Math.max(0,width-45))+"px";
+     progress.style.top="50%";
+     timeline.appendChild(progress);
     }
-  }
-
-  timelineHeading.appendChild(dayRow);
-  timelineHeading.appendChild(hourRow);
-  header.appendChild(timelineHeading);
-  root.appendChild(header);
-
-  const bodyStartY = header.offsetHeight || 72;
-
-  printers.forEach(printer => {
-    const row = document.createElement("div");
-    row.className = "printer-row";
-    row.dataset.printerId = printer.id;
-
-    const name = document.createElement("div");
-    name.className = "printer-name";
-    name.innerHTML = `<strong>${escapeHtml(printer.name)}</strong><small>${getPrinterSummary(printer)}</small>`;
-    name.title = "Dashboard üzerinden yazıcı durumunu düzenleyebilirsin.";
-    row.appendChild(name);
-
-    const timeline = document.createElement("div");
-    timeline.className = "printer-timeline";
-
-    for (let i = 0; i < hours; i++) {
-      const date = new Date(startMs + i * HOUR_MS);
-      const cell = document.createElement("div");
-      cell.className = "calendar-cell";
-      if (date.getHours() < 8 || date.getHours() >= 16) cell.classList.add("off-hours");
-      if (date.getDay() === 0 || date.getDay() === 6) cell.classList.add("weekend");
-      cell.title = `${printer.name} · ${fmtDateTime(date)} — İş eklemek için tıkla`;
-      cell.addEventListener("click", () => openJobModal(null, {
-        printerId: printer.id,
-        start: date
-      }));
-      timeline.appendChild(cell);
-    }
-
-    jobs.filter(j => j.printerId === printer.id && j.end > new Date(startMs) && j.start < new Date(endMs))
-      .forEach(job => {
-        const clippedStart = Math.max(job.start.getTime(), startMs);
-        const clippedEnd = Math.min(job.end.getTime(), endMs);
-        const left = ((clippedStart - startMs) / HOUR_MS) * zoom;
-        const width = ((clippedEnd - clippedStart) / HOUR_MS) * zoom;
-        const state = jobState(job, now);
-
-        const block = document.createElement("div");
-        block.className = "job " + state;
-        block.style.left = left + "px";
-        block.style.width = Math.max(width, 8) + "px";
-        block.innerHTML = `<strong>${escapeHtml(job.name)}</strong><small>${fmtTime(job.start)}–${fmtTime(job.end)}</small>`;
-        block.title = `${job.name}\n${fmtDateTime(job.start)} – ${fmtDateTime(job.end)}\nDüzenlemek için tıkla`;
-        block.addEventListener("click", e => {
-          e.stopPropagation();
-          openJobModal(job.id);
-        });
-        timeline.appendChild(block);
-
-        if (state === "running") {
-          const total = Math.max(1, job.end - job.start);
-          const pct = Math.max(0, Math.min(100, Math.floor(((now - job.start) / total) * 100)));
-          const leftOfNow = ((now.getTime() - startMs) / HOUR_MS) * zoom;
-          const lineOffset = leftOfNow - left;
-
-          const progress = document.createElement("div");
-          progress.className = "job-progress";
-          progress.textContent = pct + "%";
-          progress.style.left = Math.max(left + 2, leftOfNow - 45) + "px";
-          progress.style.top = "1px";
-          timeline.appendChild(progress);
-
-          const label = document.createElement("div");
-          label.className = "job-label";
-          label.textContent = job.name;
-          label.style.left = (leftOfNow + 7) + "px";
-          label.style.top = "25px";
-          timeline.appendChild(label);
-        }
-      });
-
-    row.appendChild(timeline);
-    root.appendChild(row);
+   }
   });
-
-  // Tek bir şimdiki zaman çizgisi: sadece yazıcı satırlarının yüksekliği kadar.
-  if (nowVisible && printers.length) {
-    const lineX = ((now.getTime() - startMs) / HOUR_MS) * zoom;
-    const line = document.createElement("div");
-    line.className = "global-now-line";
-    line.style.left = `calc(var(--name-width) + ${lineX}px)`;
-    line.style.top = bodyStartY + "px";
-    line.style.height = (printers.length * parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--row-height"))) + "px";
-    root.appendChild(line);
-
-    const cap = document.createElement("div");
-    cap.className = "now-cap";
-    cap.style.left = `calc(var(--name-width) + ${lineX}px)`;
-    cap.style.top = bodyStartY + "px";
-    root.appendChild(cap);
-  }
-}
-
-function getPrinterSummary(printer) {
-  const status = activeStatus(printer);
-  if (!status) return "Durum: Normal";
-  return status.type === "maintenance" ? "Durum: Bakım" : "Durum: Arıza";
-}
-
-function getPrinterDetails(printer) {
-  const now = new Date();
-  const status = activeStatus(printer, now);
-  const currentJob = jobs.find(j =>
-    j.printerId === printer.id && j.start <= now && j.end > now
-  );
-
-  if (status) {
-    const label = status.type === "maintenance" ? "Bakımda" : "Arızalı";
-    const endText = status.end ? fmtDateTime(status.end) : "Bitiş zamanı belirtilmedi";
-    return {
-      label,
-      cls: status.type,
-      details: `${fmtDateTime(status.start)} başlangıç · ${endText}`,
-      note: status.note || "Ek not yok"
-    };
-  }
-  if (currentJob) {
-    const remaining = Math.max(0, Math.ceil((currentJob.end - now) / HOUR_MS));
-    const mins = Math.max(0, Math.ceil((currentJob.end - now) / 60000));
-    const h = Math.floor(mins / 60);
-    const m = mins % 60;
-    return {
-      label: "Baskıda",
-      cls: "printing",
-      details: `İş: ${currentJob.name} · Kalan süre: ${h} sa ${m} dk`,
-      note: `Tahmini bitiş: ${fmtDateTime(currentJob.end)}`
-    };
-  }
-  return {
-    label: "Müsait",
-    cls: "available",
-    details: "Şu anda baskı veya aktif bakım kaydı yok.",
-    note: "Planlanan işler takvimde görüntülenir."
-  };
-}
-
-function renderDashboard() {
-  const now = new Date();
-  $("statPrinters").textContent = printers.length;
-  $("statPrinting").textContent = jobs.filter(j => jobState(j, now) === "running").length;
-  $("statUnavailable").textContent = printers.filter(p => !!activeStatus(p, now)).length;
-  $("statPending").textContent = jobs.filter(j => jobState(j, now) === "pending").length;
-
-  document.querySelectorAll("[data-dash]").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.dash === activeDashboardTab);
+  row.appendChild(timeline);root.appendChild(row);
+ });
+ if(nowVisible&&printers.length){
+  const x=(now.getTime()-startMs)/HOUR*zoom;
+  const rowHeight=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--row-height"))||76;
+  const line=document.createElement("div");line.className="global-now-line";
+  line.style.left=`calc(var(--name-width) + ${x}px)`;
+  line.style.top=headerHeight+"px";line.style.height=(printers.length*rowHeight)+"px";root.appendChild(line);
+  const cap=document.createElement("div");cap.className="now-cap";
+  cap.style.left=`calc(var(--name-width) + ${x}px)`;cap.style.top=headerHeight+"px";root.appendChild(cap);
+ }
+ // İlk açılışta takvimi şimdiki zamana getir; kullanıcı kaydırmasını sonradan bozma.
+ if(!initialScrollDone&&nowVisible){
+  requestAnimationFrame(()=>{
+   const viewport=$("calendarViewport");
+   const target=(now.getTime()-startMs)/HOUR*zoom;
+   viewport.scrollLeft=Math.max(0,parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--name-width"))+target-viewport.clientWidth*.48);
+   initialScrollDone=true;
   });
-
-  const content = $("dashboardContent");
-  content.innerHTML = "";
-
-  if (activeDashboardTab === "printers") {
-    const grid = document.createElement("div");
-    grid.className = "printer-grid";
-    printers.forEach(printer => {
-      const details = getPrinterDetails(printer);
-      const card = document.createElement("div");
-      card.className = "printer-card";
-      card.innerHTML = `
-        <span class="status-pill ${details.cls}">${escapeHtml(details.label)}</span>
-        <h3>${escapeHtml(printer.name)}</h3>
-        <p>${escapeHtml(details.details)}</p>
-        <p>${escapeHtml(details.note)}</p>
-        <div class="card-actions">
-          <button class="small" data-edit-name="${printer.id}">Adını Düzenle</button>
-          <button class="small primary" data-edit-status="${printer.id}">Durum Güncelle</button>
-        </div>`;
-      grid.appendChild(card);
-    });
-    content.appendChild(grid);
-  } else {
-    let filtered = [];
-    if (activeDashboardTab === "printing") filtered = jobs.filter(j => jobState(j, now) === "running");
-    if (activeDashboardTab === "completed") filtered = jobs.filter(j => jobState(j, now) === "completed");
-    if (activeDashboardTab === "pending") filtered = jobs.filter(j => jobState(j, now) === "pending");
-
-    if (!filtered.length) {
-      content.innerHTML = '<div class="empty-state">Bu kategoride henüz iş bulunmuyor.</div>';
-    } else {
-      const grid = document.createElement("div");
-      grid.className = "job-grid";
-      filtered.sort((a,b) => a.start - b.start).forEach(job => {
-        const printer = printerById(job.printerId);
-        const state = jobState(job, now);
-        let extra = "";
-        if (state === "running") {
-          const mins = Math.max(0, Math.ceil((job.end - now) / 60000));
-          extra = `Kalan süre: ${Math.floor(mins/60)} sa ${mins%60} dk`;
-        } else if (state === "pending") {
-          extra = "Başlangıç: " + fmtDateTime(job.start);
-        } else {
-          extra = "Tamamlanma: " + fmtDateTime(job.end);
-        }
-
-        const card = document.createElement("div");
-        card.className = "job-card";
-        card.innerHTML = `
-          <span class="status-pill ${state === "running" ? "printing" : state === "completed" ? "available" : "maintenance"}">${state === "running" ? "Baskıda" : state === "completed" ? "Tamamlandı" : "Planlandı"}</span>
-          <h3>${escapeHtml(job.name)}</h3>
-          <p>Yazıcı: ${escapeHtml(printer ? printer.name : "Silinmiş yazıcı")}</p>
-          <p>${fmtDateTime(job.start)} – ${fmtDateTime(job.end)}</p>
-          <p>${escapeHtml(extra)}</p>
-          ${job.note ? `<p>Not: ${escapeHtml(job.note)}</p>` : ""}
-          <div class="card-actions"><button class="small" data-edit-job="${job.id}">İşi Düzenle</button></div>`;
-        grid.appendChild(card);
-      });
-      content.appendChild(grid);
-    }
-  }
-
-  renderSavedJobs();
+ }
 }
 
-function renderSavedJobs() {
-  const container = $("savedJobsContent");
-  container.innerHTML = "";
-  if (!savedJobs.length) {
-    container.innerHTML = '<div class="empty-state">İş havuzu boş. “İş Oluştur” ile takvime yerleştirilmemiş iş ekleyebilirsin.</div>';
-    return;
-  }
-  const grid = document.createElement("div");
-  grid.className = "job-grid";
-  savedJobs.forEach(saved => {
-    const card = document.createElement("div");
-    card.className = "job-card";
-    card.innerHTML = `
-      <h3>${escapeHtml(saved.name)}</h3>
-      <p>Süre: ${saved.duration} saat</p>
-      ${saved.note ? `<p>Not: ${escapeHtml(saved.note)}</p>` : ""}
-      <div class="card-actions">
-        <button class="small primary" data-schedule-saved="${saved.id}">Takvime Ekle</button>
-        <button class="small" data-edit-saved="${saved.id}">Düzenle</button>
-        <button class="small danger" data-delete-saved="${saved.id}">Sil</button>
-      </div>`;
+function printerDetails(p){
+ const n=new Date(),s=activeStatus(p,n);
+ const j=jobs.find(x=>x.printerId===p.id&&x.start<=n&&x.end>n);
+ if(s)return {label:s.type==="maintenance"?"Bakımda":"Arızalı",cls:s.type,details:`${fmtDT(s.start)} başlangıç · ${s.end?fmtDT(s.end):"Bitiş zamanı belirtilmedi"}`,note:s.note||"Ek not yok"};
+ if(j){const mins=Math.max(0,Math.ceil((j.end-n)/60000));return {label:"Baskıda",cls:"printing",details:`İş: ${j.name} · Kalan süre: ${Math.floor(mins/60)} sa ${mins%60} dk`,note:"Tahmini bitiş: "+fmtDT(j.end)}}
+ return {label:"Müsait",cls:"available",details:"Şu anda baskı veya aktif bakım kaydı yok.",note:"Planlanan işler takvimde görüntülenir."};
+}
+function renderDashboard(){
+ const n=new Date();
+ $("statPrinters").textContent=printers.length;
+ $("statPrinting").textContent=jobs.filter(j=>jobState(j,n)==="running").length;
+ $("statUnavailable").textContent=printers.filter(p=>!!activeStatus(p,n)).length;
+ $("statPending").textContent=jobs.filter(j=>jobState(j,n)==="pending").length;
+ document.querySelectorAll("[data-dash]").forEach(b=>b.classList.toggle("active",b.dataset.dash===activeDashboardTab));
+ const c=$("dashboardContent");c.innerHTML="";
+ if(activeDashboardTab==="printers"){
+  const grid=document.createElement("div");grid.className="printer-grid";
+  printers.forEach(p=>{
+   const d=printerDetails(p),card=document.createElement("div");card.className="printer-card";
+   card.innerHTML=`<span class="status-pill ${d.cls}">${esc(d.label)}</span><h3>${esc(p.name)}</h3><p>${esc(d.details)}</p><p>${esc(d.note)}</p><div class="card-actions"><button class="small" data-edit-name="${p.id}">Adını Düzenle</button><button class="small primary" data-edit-status="${p.id}">Durum Güncelle</button></div>`;
+   grid.appendChild(card);
+  });c.appendChild(grid);
+ }else{
+  let arr=jobs.filter(j=>jobState(j,n)===(activeDashboardTab==="printing"?"running":activeDashboardTab==="completed"?"completed":"pending"));
+  if(!arr.length)c.innerHTML='<div class="empty-state">Bu kategoride henüz iş bulunmuyor.</div>';
+  else{
+   const grid=document.createElement("div");grid.className="job-grid";
+   arr.sort((a,b)=>a.start-b.start).forEach(j=>{
+    const state=jobState(j,n),p=printerById(j.printerId);
+    let extra=state==="running"?(()=>{const m=Math.max(0,Math.ceil((j.end-n)/60000));return `Kalan süre: ${Math.floor(m/60)} sa ${m%60} dk`})():state==="pending"?"Başlangıç: "+fmtDT(j.start):"Tamamlanma: "+fmtDT(j.end);
+    const card=document.createElement("div");card.className="job-card";
+    card.innerHTML=`<span class="status-pill ${state==="running"?"printing":state==="completed"?"available":"maintenance"}">${state==="running"?"Baskıda":state==="completed"?"Tamamlandı":"Planlandı"}</span><h3>${esc(j.name)}</h3><p>Yazıcı: ${esc(p?.name||"Bilinmiyor")}</p><p>${fmtDT(j.start)} – ${fmtDT(j.end)}</p><p>${esc(extra)}</p>${j.note?`<p>Not: ${esc(j.note)}</p>`:""}<div class="card-actions"><button class="small" data-edit-job="${j.id}">İşi Düzenle</button></div>`;
     grid.appendChild(card);
-  });
-  container.appendChild(grid);
-}
-
-function showModal(title, html, mode) {
-  modalMode = mode;
-  $("modalTitle").textContent = title;
-  $("modalContent").innerHTML = html;
-  $("modalBackdrop").classList.add("open");
-}
-function closeModal() {
-  $("modalBackdrop").classList.remove("open");
-  editingJobId = null;
-  editingPrinterId = null;
-  selectedCell = null;
-  modalMode = "";
-}
-$("closeModal").addEventListener("click", closeModal);
-$("modalBackdrop").addEventListener("click", e => {
-  if (e.target === $("modalBackdrop")) closeModal();
-});
-
-function openJobModal(jobId = null, defaults = {}) {
-  const job = jobId ? jobById(jobId) : null;
-  editingJobId = jobId;
-  selectedCell = defaults;
-
-  const start = job ? job.start : (defaults.start || new Date());
-  const end = job ? job.end : new Date(start.getTime() + 4 * HOUR_MS);
-  const printerId = job ? job.printerId : (defaults.printerId || printers[0]?.id);
-
-  const printerOptions = printers.map(p =>
-    `<option value="${p.id}" ${p.id === printerId ? "selected" : ""}>${escapeHtml(p.name)}</option>`
-  ).join("");
-
-  showModal(job ? "İşi Düzenle" : "Takvime İş Ekle", `
-    <form id="jobForm">
-      <div class="form-grid">
-        <div class="field full">
-          <label for="jobName">İş / Ürün adı</label>
-          <input id="jobName" required maxlength="100" value="${escapeHtml(job?.name || "")}" placeholder="Örn. Ürün A - Parti 01">
-        </div>
-        <div class="field">
-          <label for="jobPrinter">Yazıcı</label>
-          <select id="jobPrinter" required>${printerOptions}</select>
-        </div>
-        <div class="field">
-          <label for="jobStart">Başlangıç</label>
-          <input id="jobStart" type="datetime-local" required value="${toLocalInput(start)}">
-        </div>
-        <div class="field">
-          <label for="jobEnd">Bitiş</label>
-          <input id="jobEnd" type="datetime-local" required value="${toLocalInput(end)}">
-        </div>
-        <div class="field full">
-          <label for="jobNote">Not</label>
-          <textarea id="jobNote" placeholder="İşle ilgili notlar...">${escapeHtml(job?.note || "")}</textarea>
-        </div>
-      </div>
-      <p class="notice">İşin süresi başlangıç ve bitiş saatinden hesaplanır. Aynı yazıcıda çakışan işler kaydedilmez.</p>
-      <div class="modal-footer">
-        ${job ? '<button type="button" class="danger" id="deleteJobBtn">İşi Sil</button>' : ""}
-        <button type="button" id="cancelJobBtn">İptal</button>
-        <button class="primary" type="submit">Kaydet</button>
-      </div>
-    </form>
-  `, "job");
-
-  $("jobForm").addEventListener("submit", saveJobFromForm);
-  $("cancelJobBtn").addEventListener("click", closeModal);
-  if (job) $("deleteJobBtn").addEventListener("click", () => {
-    const index = jobs.findIndex(j => j.id === job.id);
-    if (index >= 0) jobs.splice(index, 1);
-    closeModal();
-    refreshAll();
-  });
-}
-
-function toLocalInput(date) {
-  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-  return local.toISOString().slice(0,16);
-}
-function fromLocalInput(value) {
-  return new Date(value);
-}
-
-function saveJobFromForm(e) {
-  e.preventDefault();
-  const name = $("jobName").value.trim();
-  const printerId = $("jobPrinter").value;
-  const start = fromLocalInput($("jobStart").value);
-  const end = fromLocalInput($("jobEnd").value);
-  const note = $("jobNote").value.trim();
-
-  if (!name) return alert("Lütfen iş adını gir.");
-  if (!(start instanceof Date) || isNaN(start) || !(end instanceof Date) || isNaN(end) || end <= start) {
-    return alert("Bitiş zamanı başlangıç zamanından sonra olmalıdır.");
+   });c.appendChild(grid);
   }
-  const conflict = jobConflict(printerId, start, end, editingJobId);
-  if (conflict) return alert(conflict);
+ }
+ renderSavedJobs();
+}
+function renderSavedJobs(){
+ const c=$("savedJobsContent");c.innerHTML="";
+ if(!savedJobs.length){c.innerHTML='<div class="empty-state">İş havuzu boş. “İş Oluştur” ile yeni iş ekleyebilirsin.</div>';return}
+ const grid=document.createElement("div");grid.className="job-grid";
+ savedJobs.forEach(s=>{
+  const card=document.createElement("div");card.className="job-card";
+  card.innerHTML=`<h3>${esc(s.name)}</h3><p>Süre: ${s.hours} saat ${s.minutes} dakika</p>${s.note?`<p>${esc(s.note)}</p>`:""}<div class="card-actions"><button class="small primary" data-schedule-saved="${s.id}">Takvime Ekle</button><button class="small" data-edit-saved="${s.id}">Düzenle</button><button class="small danger" data-delete-saved="${s.id}">Sil</button></div>`;
+  grid.appendChild(card);
+ });c.appendChild(grid);
+}
+function showModal(title,html){$("modalTitle").textContent=title;$("modalContent").innerHTML=html;$("modalBackdrop").classList.add("open")}
+function closeModal(){$("modalBackdrop").classList.remove("open");editingJobId=null;selectedCell=null}
+$("closeModal").onclick=closeModal;
+$("modalBackdrop").onclick=e=>{if(e.target===$("modalBackdrop"))closeModal()};
 
-  if (editingJobId) {
-    const job = jobById(editingJobId);
-    Object.assign(job, { name, printerId, start, end, note });
-  } else {
-    jobs.push({ id: "j" + nextId++, name, printerId, start, end, note });
-  }
-  closeModal();
-  refreshAll();
+function durationParts(ms){const total=Math.max(1,Math.round(ms/60000));return {hours:Math.floor(total/60),minutes:total%60}}
+function openJobModal(jobId=null,defaults={}){
+ const j=jobId?jobById(jobId):null;editingJobId=jobId;selectedCell=defaults;
+ const start=j?j.start:(defaults.start||new Date());
+ const dur=durationParts(j?j.end-j.start:4*HOUR);
+ const pid=j?j.printerId:(defaults.printerId||printers[0]?.id);
+ const options=printers.map(p=>`<option value="${p.id}" ${p.id===pid?"selected":""}>${esc(p.name)}</option>`).join("");
+ showModal(j?"İşi Düzenle":"Takvime İş Ekle",`
+ <form id="jobForm">
+  <div class="form-grid">
+   <div class="field full"><label for="jobName">İş / Ürün adı</label><input id="jobName" required maxlength="100" value="${esc(j?.name||"")}" placeholder="Örn. Ürün A - Parti 01"></div>
+   <div class="field"><label for="jobPrinter">Yazıcı</label><select id="jobPrinter" required>${options}</select></div>
+   <div class="field"><label for="jobStart">Başlangıç</label><input id="jobStart" type="datetime-local" required value="${toInput(start)}"></div>
+   <div class="field full"><label>Baskı süresi</label><div class="duration-fields"><div class="field"><label for="durationHours">Saat</label><input id="durationHours" type="number" min="0" max="9999" step="1" value="${dur.hours}" required></div><div class="field"><label for="durationMinutes">Dakika</label><select id="durationMinutes">${[0,5,10,15,20,25,30,35,40,45,50,55].map(m=>`<option value="${m}" ${m===dur.minutes?"selected":""}>${m} dakika</option>`).join("")}</select></div></div><div class="notice" id="calculatedEnd"></div></div>
+   <div class="field full"><label for="jobNote">Not</label><textarea id="jobNote" placeholder="İşle ilgili notlar...">${esc(j?.note||"")}</textarea></div>
+  </div>
+  <p class="notice">Bitiş zamanı, başlangıç + baskı süresi olarak otomatik hesaplanır. Aynı yazıcıdaki çakışan işler kaydedilmez.</p>
+  <div class="modal-footer">${j?'<button type="button" class="danger" id="deleteJobBtn">İşi Sil</button>':""}<button type="button" id="cancelJobBtn">İptal</button><button class="primary" type="submit">Kaydet</button></div>
+ </form>`);
+ const updateEnd=()=>{
+  const s=fromInput($("jobStart").value),h=Number($("durationHours").value||0),m=Number($("durationMinutes").value||0);
+  const total=h*60+m;
+  $("calculatedEnd").textContent=total>0&&!isNaN(s.getTime())?"Otomatik bitiş: "+fmtDT(new Date(s.getTime()+total*60000)):"Baskı süresini gir.";
+ };
+ ["jobStart","durationHours","durationMinutes"].forEach(id=>$(id).addEventListener("input",updateEnd));
+ updateEnd();
+ $("jobForm").onsubmit=saveJob;
+ $("cancelJobBtn").onclick=closeModal;
+ if(j)$("deleteJobBtn").onclick=()=>{const i=jobs.findIndex(x=>x.id===j.id);if(i>=0)jobs.splice(i,1);closeModal();refreshAll()};
+}
+function saveJob(e){
+ e.preventDefault();
+ const name=$("jobName").value.trim(),printerId=$("jobPrinter").value,start=fromInput($("jobStart").value);
+ const hours=Number($("durationHours").value),minutes=Number($("durationMinutes").value),note=$("jobNote").value.trim();
+ const total=hours*60+minutes;
+ if(!name)return alert("Lütfen iş adını gir.");
+ if(isNaN(start.getTime()))return alert("Geçerli bir başlangıç zamanı gir.");
+ if(!Number.isFinite(total)||total<=0)return alert("Baskı süresi sıfırdan büyük olmalıdır.");
+ const end=new Date(start.getTime()+total*60000);
+ const problem=conflict(printerId,start,end,editingJobId);if(problem)return alert(problem);
+ if(editingJobId)Object.assign(jobById(editingJobId),{name,printerId,start,end,note});
+ else jobs.push({id:"j"+nextId++,name,printerId,start,end,note});
+ closeModal();refreshAll();
+}
+function openSavedModal(savedId=null){
+ const s=savedJobs.find(x=>x.id===savedId);
+ showModal(s?"İş Havuzunu Düzenle":"İş Havuzuna İş Ekle",`
+ <form id="savedForm"><div class="form-grid">
+ <div class="field full"><label for="savedName">İş / Ürün adı</label><input id="savedName" required value="${esc(s?.name||"")}"></div>
+ <div class="field"><label for="savedHours">Saat</label><input id="savedHours" type="number" min="0" value="${s?.hours??4}" required></div>
+ <div class="field"><label for="savedMinutes">Dakika</label><select id="savedMinutes">${[0,5,10,15,20,25,30,35,40,45,50,55].map(m=>`<option value="${m}" ${m===(s?.minutes??0)?"selected":""}>${m} dakika</option>`).join("")}</select></div>
+ <div class="field full"><label for="savedNote">Not</label><textarea id="savedNote">${esc(s?.note||"")}</textarea></div>
+ </div><div class="modal-footer"><button type="button" id="cancelSaved">İptal</button><button class="primary" type="submit">Kaydet</button></div></form>`);
+ $("cancelSaved").onclick=closeModal;
+ $("savedForm").onsubmit=e=>{
+  e.preventDefault();const name=$("savedName").value.trim(),hours=Number($("savedHours").value),minutes=Number($("savedMinutes").value),note=$("savedNote").value.trim();
+  if(!name||hours*60+minutes<=0)return alert("İş adı ve sıfırdan büyük baskı süresi gir.");
+  if(s)Object.assign(s,{name,hours,minutes,note});else savedJobs.push({id:"s"+nextId++,name,hours,minutes,note});
+  closeModal();renderDashboard();
+ };
+}
+function scheduleSaved(id){
+ const s=savedJobs.find(x=>x.id===id);if(!s)return;
+ const start=new Date();start.setMinutes(0,0,0);
+ openJobModal(null,{printerId:printers[0]?.id,start});
+ $("jobName").value=s.name;$("durationHours").value=s.hours;$("durationMinutes").value=s.minutes;$("jobNote").value=s.note||"";
+ $("durationHours").dispatchEvent(new Event("input"));
+}
+function openAddPrinter(){
+ showModal("Yeni Yazıcı Ekle",`<form id="printerForm"><div class="field"><label for="newPrinterName">Yazıcı adı</label><input id="newPrinterName" required></div><div class="modal-footer"><button type="button" id="cancelPrinter">İptal</button><button class="primary" type="submit">Ekle</button></div></form>`);
+ $("cancelPrinter").onclick=closeModal;
+ $("printerForm").onsubmit=e=>{e.preventDefault();const name=$("newPrinterName").value.trim();if(!name)return;printers.push({id:"p"+nextId++,name,statuses:[]});closeModal();refreshAll()};
+}
+function renamePrinter(id){
+ const p=printerById(id);if(!p)return;
+ showModal("Yazıcı Adını Düzenle",`<form id="renameForm"><div class="field"><label for="renameInput">Yazıcı adı</label><input id="renameInput" required value="${esc(p.name)}"></div><div class="modal-footer"><button type="button" id="cancelRename">İptal</button><button class="primary" type="submit">Kaydet</button></div></form>`);
+ $("cancelRename").onclick=closeModal;
+ $("renameForm").onsubmit=e=>{e.preventDefault();p.name=$("renameInput").value.trim()||p.name;closeModal();refreshAll()};
+}
+function editStatus(id){
+ const p=printerById(id);if(!p)return;const n=new Date(),cur=activeStatus(p,n);
+ showModal("Yazıcı Durumunu Güncelle",`<form id="statusForm"><div class="form-grid">
+ <div class="field full"><label for="statusType">Durum</label><select id="statusType"><option value="available">Müsait / Normal</option><option value="maintenance">Bakım</option><option value="fault">Arıza</option></select></div>
+ <div class="field"><label for="statusStart">Başlangıç</label><input id="statusStart" type="datetime-local" required value="${toInput(cur?.start||n)}"></div>
+ <div class="field"><label for="statusEnd">Bitiş (isteğe bağlı)</label><input id="statusEnd" type="datetime-local" value="${cur?.end?toInput(cur.end):""}"></div>
+ <div class="field full"><label for="statusNote">Açıklama / bakım veya arıza notu</label><textarea id="statusNote">${esc(cur?.note||"")}</textarea></div>
+ </div><p class="notice">Bitiş boşsa durum açık uçlu kaydedilir.</p><div class="modal-footer"><button type="button" id="cancelStatus">İptal</button><button class="primary" type="submit">Kaydet</button></div></form>`);
+ if(cur)$("statusType").value=cur.type;
+ $("cancelStatus").onclick=closeModal;
+ $("statusForm").onsubmit=e=>{
+  e.preventDefault();const type=$("statusType").value,start=fromInput($("statusStart").value),end=$("statusEnd").value?fromInput($("statusEnd").value):null,note=$("statusNote").value.trim();
+  if(isNaN(start.getTime())||(end&&(isNaN(end.getTime())||end<=start)))return alert("Başlangıç ve bitiş saatlerini kontrol et.");
+  p.statuses.forEach(s=>{if(overlap(start,end||new Date("2999-12-31"),s.start,s.end||new Date("2999-12-31"))){if(s.start<start)s.end=start;else s.end=s.start}});
+  if(type!=="available")p.statuses.unshift({id:"st"+nextId++,type,start,end,note});
+  closeModal();refreshAll();
+ };
 }
 
-function openSavedJobModal(savedId = null) {
-  const saved = savedJobs.find(j => j.id === savedId);
-  showModal(saved ? "İş Havuzunu Düzenle" : "İş Havuzuna İş Ekle", `
-    <form id="savedJobForm">
-      <div class="form-grid">
-        <div class="field full">
-          <label for="savedName">İş / Ürün adı</label>
-          <input id="savedName" required maxlength="100" value="${escapeHtml(saved?.name || "")}" placeholder="Örn. Ürün B - Parti 02">
-        </div>
-        <div class="field">
-          <label for="savedDuration">Tahmini süre (saat)</label>
-          <input id="savedDuration" type="number" min="0.5" step="0.5" required value="${saved?.duration || 4}">
-        </div>
-        <div class="field full">
-          <label for="savedNote">Not</label>
-          <textarea id="savedNote">${escapeHtml(saved?.note || "")}</textarea>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" id="cancelSaved">İptal</button>
-        <button type="submit" class="primary">Kaydet</button>
-      </div>
-    </form>
-  `, "saved");
-  $("cancelSaved").addEventListener("click", closeModal);
-  $("savedJobForm").addEventListener("submit", e => {
-    e.preventDefault();
-    const name = $("savedName").value.trim();
-    const duration = Number($("savedDuration").value);
-    const note = $("savedNote").value.trim();
-    if (!name || !Number.isFinite(duration) || duration <= 0) return alert("İş adı ve geçerli süre gir.");
-    if (saved) Object.assign(saved, { name, duration, note });
-    else savedJobs.push({ id: "s" + nextId++, name, duration, note });
-    closeModal();
-    renderDashboard();
-  });
-}
-
-function scheduleSaved(savedId) {
-  const saved = savedJobs.find(j => j.id === savedId);
-  if (!saved) return;
-  const defaultStart = new Date();
-  defaultStart.setMinutes(0,0,0);
-  openJobModal(null, { printerId: printers[0]?.id, start: defaultStart });
-  $("jobName").value = saved.name;
-  $("jobEnd").value = toLocalInput(new Date(defaultStart.getTime() + saved.duration * HOUR_MS));
-  $("jobNote").value = saved.note || "";
-}
-
-function openPrinterModal() {
-  showModal("Yeni Yazıcı Ekle", `
-    <form id="printerForm">
-      <div class="field">
-        <label for="printerNameInput">Yazıcı adı</label>
-        <input id="printerNameInput" required maxlength="60" placeholder="Örn. R4310-06">
-      </div>
-      <div class="modal-footer">
-        <button type="button" id="cancelPrinter">İptal</button>
-        <button type="submit" class="primary">Yazıcı Ekle</button>
-      </div>
-    </form>
-  `, "printer");
-  $("cancelPrinter").addEventListener("click", closeModal);
-  $("printerForm").addEventListener("submit", e => {
-    e.preventDefault();
-    const name = $("printerNameInput").value.trim();
-    if (!name) return;
-    printers.push({ id: "p" + nextId++, name, statuses: [] });
-    closeModal();
-    refreshAll();
-  });
-}
-
-function editPrinterName(printerId) {
-  const printer = printerById(printerId);
-  if (!printer) return;
-  showModal("Yazıcı Adını Düzenle", `
-    <form id="renameForm">
-      <div class="field">
-        <label for="renameInput">Yazıcı adı</label>
-        <input id="renameInput" required maxlength="60" value="${escapeHtml(printer.name)}">
-      </div>
-      <div class="modal-footer">
-        <button type="button" id="cancelRename">İptal</button>
-        <button type="submit" class="primary">Kaydet</button>
-      </div>
-    </form>
-  `, "rename");
-  $("cancelRename").addEventListener("click", closeModal);
-  $("renameForm").addEventListener("submit", e => {
-    e.preventDefault();
-    printer.name = $("renameInput").value.trim() || printer.name;
-    closeModal();
-    refreshAll();
-  });
-}
-
-function openPrinterStatusModal(printerId) {
-  const printer = printerById(printerId);
-  if (!printer) return;
-  editingPrinterId = printerId;
-  const now = new Date();
-  const current = activeStatus(printer, now);
-
-  showModal("Yazıcı Durumunu Güncelle", `
-    <form id="statusForm">
-      <div class="form-grid">
-        <div class="field full">
-          <label for="printerStatusType">Durum</label>
-          <select id="printerStatusType">
-            <option value="available">Müsait / Normal</option>
-            <option value="maintenance">Bakım</option>
-            <option value="fault">Arıza</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="statusStart">Başlangıç</label>
-          <input id="statusStart" type="datetime-local" required value="${toLocalInput(current?.start || now)}">
-        </div>
-        <div class="field">
-          <label for="statusEnd">Bitiş (isteğe bağlı)</label>
-          <input id="statusEnd" type="datetime-local" value="${current?.end ? toLocalInput(current.end) : ""}">
-        </div>
-        <div class="field full">
-          <label for="statusNote">Açıklama / bakım veya arıza notu</label>
-          <textarea id="statusNote" placeholder="Arıza nedeni, yapılan işlem, gerekli parça vb.">${escapeHtml(current?.note || "")}</textarea>
-        </div>
-      </div>
-      <p class="notice">Bitiş boş bırakılırsa durum açık uçlu kaydedilir. Normal durum seçildiğinde belirtilen zaman aralığındaki eski bakım/arıza kayıtları kapatılır.</p>
-      <div class="modal-footer">
-        <button type="button" id="cancelStatus">İptal</button>
-        <button type="submit" class="primary">Durumu Kaydet</button>
-      </div>
-    </form>
-  `, "status");
-
-  if (current) $("printerStatusType").value = current.type;
-  $("cancelStatus").addEventListener("click", closeModal);
-  $("statusForm").addEventListener("submit", e => {
-    e.preventDefault();
-    const type = $("printerStatusType").value;
-    const start = fromLocalInput($("statusStart").value);
-    const endValue = $("statusEnd").value;
-    const end = endValue ? fromLocalInput(endValue) : null;
-    const note = $("statusNote").value.trim();
-
-    if (isNaN(start.getTime())) return alert("Geçerli bir başlangıç zamanı gir.");
-    if (end && (isNaN(end.getTime()) || end <= start)) return alert("Bitiş zamanı başlangıçtan sonra olmalıdır.");
-
-    if (type === "available") {
-      printer.statuses.forEach(s => {
-        const sEnd = s.end || new Date("2999-12-31");
-        if (overlapping(start, end || new Date("2999-12-31"), s.start, sEnd)) {
-          if (s.start < start) s.end = start;
-          else s.end = s.start;
-        }
-      });
-    } else {
-      // Yeni durum kaydı, aynı yazıcıdaki çakışan eski kayıtlardan önce değerlendirilir.
-      printer.statuses.forEach(s => {
-        const sEnd = s.end || new Date("2999-12-31");
-        if (overlapping(start, end || new Date("2999-12-31"), s.start, sEnd)) {
-          if (s.start < start) s.end = start;
-          else s.end = s.start;
-        }
-      });
-      printer.statuses.unshift({ id: "st" + nextId++, type, start, end, note });
-    }
-    closeModal();
-    refreshAll();
-  });
-}
-
-function refreshAll() {
-  renderCalendar();
-  renderDashboard();
-}
-
-document.querySelectorAll("[data-view]").forEach(button => {
-  button.addEventListener("click", () => {
-    activeView = button.dataset.view;
-    document.querySelectorAll("[data-view]").forEach(b => b.classList.toggle("active", b === button));
-    $("calendarView").classList.toggle("hidden", activeView !== "calendar");
-    $("dashboardView").classList.toggle("hidden", activeView !== "dashboard");
-    if (activeView === "calendar") renderCalendar();
-    else renderDashboard();
-  });
+document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{
+ activeView=b.dataset.view;
+ document.querySelectorAll("[data-view]").forEach(x=>x.classList.toggle("active",x===b));
+ $("calendarView").classList.toggle("hidden",activeView!=="calendar");
+ $("dashboardView").classList.toggle("hidden",activeView!=="dashboard");
+ if(activeView==="calendar")renderCalendar();else renderDashboard();
 });
-
-document.querySelectorAll("[data-dash]").forEach(button => {
-  button.addEventListener("click", () => {
-    activeDashboardTab = button.dataset.dash;
-    renderDashboard();
-  });
+document.querySelectorAll("[data-dash]").forEach(b=>b.onclick=()=>{activeDashboardTab=b.dataset.dash;renderDashboard()});
+document.addEventListener("click",e=>{
+ const t=e.target;
+ if(t.dataset.editName)renamePrinter(t.dataset.editName);
+ if(t.dataset.editStatus)editStatus(t.dataset.editStatus);
+ if(t.dataset.editJob)openJobModal(t.dataset.editJob);
+ if(t.dataset.scheduleSaved)scheduleSaved(t.dataset.scheduleSaved);
+ if(t.dataset.editSaved)openSavedModal(t.dataset.editSaved);
+ if(t.dataset.deleteSaved){const i=savedJobs.findIndex(s=>s.id===t.dataset.deleteSaved);if(i>=0)savedJobs.splice(i,1);renderDashboard()}
 });
+$("addJobBtn").onclick=()=>openJobModal();
+$("addPrinterBtn").onclick=openAddPrinter;
+$("addSavedJobBtn").onclick=()=>openSavedModal();
 
-document.addEventListener("click", e => {
-  const target = e.target;
-  if (target.dataset.editName) editPrinterName(target.dataset.editName);
-  if (target.dataset.editStatus) openPrinterStatusModal(target.dataset.editStatus);
-  if (target.dataset.editJob) openJobModal(target.dataset.editJob);
-  if (target.dataset.scheduleSaved) scheduleSaved(target.dataset.scheduleSaved);
-  if (target.dataset.editSaved) openSavedJobModal(target.dataset.editSaved);
-  if (target.dataset.deleteSaved) {
-    const index = savedJobs.findIndex(j => j.id === target.dataset.deleteSaved);
-    if (index >= 0) savedJobs.splice(index, 1);
-    renderDashboard();
-  }
-});
-
-$("addJobBtn").addEventListener("click", () => openJobModal());
-$("addPrinterBtn").addEventListener("click", openPrinterModal);
-$("addSavedJobBtn").addEventListener("click", () => openSavedJobModal());
-
-renderCalendar();
-renderDashboard();
-
-// Saat ilerledikçe iş yüzdelerini, durumları ve zaman çizgisini yenile.
-setInterval(() => {
-  if (activeView === "calendar") renderCalendar();
-  if (activeView === "dashboard") renderDashboard();
-}, 30000);
+function refreshAll(){renderCalendar();renderDashboard()}
+renderCalendar();renderDashboard();
+// İlerleme, kalan süre ve zaman çizgisi güncel kalsın.
+setInterval(()=>{if(activeView==="calendar")renderCalendar();if(activeView==="dashboard")renderDashboard()},15000);
 </script>
 </body>
 </html>
