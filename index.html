@@ -4764,9 +4764,9 @@ setInterval(
     const username = usernameInput.value.trim().toLowerCase();
     const password = passwordInput.value;
 
-    if (!/^[a-z0-9_]{3,24}$/.test(username)) {
+    if (!/^[a-z0-9]{3,24}$/.test(username)) {
       message.textContent =
-        "Kullanıcı adı 3–24 karakter olmalı; yalnızca harf, rakam ve _ kullan.";
+        "Kullanıcı adı 3–24 karakter olmalı; yalnızca harf ve rakam kullan.";
       return;
     }
 
