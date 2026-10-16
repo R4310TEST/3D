@@ -4608,7 +4608,7 @@ setInterval(
     position: fixed;
     inset: 0;
     z-index: 999999;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     padding: 20px;
@@ -4673,6 +4673,14 @@ setInterval(
   }
 </style>
 
+<button
+  id="open-printer-login"
+  type="button"
+  style="position:fixed;top:12px;right:12px;z-index:999997;padding:10px 16px;border:0;border-radius:8px;cursor:pointer;background:#68a5ff;color:#101828;font-weight:bold;"
+>
+  Giriş Yap
+</button>
+  
 <div id="printer-auth-overlay">
   <div id="printer-auth-card">
     <h2>Üretim Takip Sistemi</h2>
@@ -4718,6 +4726,11 @@ setInterval(
   const message = document.getElementById("printer-auth-message");
   const overlay = document.getElementById("printer-auth-overlay");
   const userbar = document.getElementById("printer-auth-userbar");
+  
+document.getElementById("open-printer-login").addEventListener("click", () => {
+  overlay.style.display = "flex";
+});
+
   const usernameInput = document.getElementById("printer-auth-username");
   const passwordInput = document.getElementById("printer-auth-password");
 
@@ -4735,7 +4748,7 @@ setInterval(
 
   async function showUser(user) {
     if (!user) {
-      overlay.style.display = "flex";
+      overlay.style.display = "none";
       userbar.style.display = "none";
       return;
     }
